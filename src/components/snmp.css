@@ -1,0 +1,97 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f4f4f4;
+    font-family: Arial, sans-serif;
+}
+
+.snmpcommunication {
+    padding: 110px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Tam sayfa genişlik */
+    max-width: 1200px; /* Genişlik sınırı */
+    background-color: white;
+    margin:90px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.snmp-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.snmp-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.snmp-content input {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.snmp-content button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.snmp-content button:hover {
+    background-color: #0056b3;
+}
+
+.snmp-data {
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+}
+
+.clear-button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.clear-button:hover {
+    background-color: #cc0000;
+}
+
+.alarm-icon {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: red; /* Varsayılan kırmızı */
+}
+
+.alarm-icon.connected {
+    background-color: green; /* Connected durumunda yeşil */
+}
