@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
+import { FaPlayCircle, FaRegStopCircle } from "react-icons/fa";
 import "./deviceList.css";
 
-const DeviceList = () => {
+const DeviceListWithCommunication = () => {
     const [devices, setDevices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [webSocket, setWebSocket] = useState(null);
+    const [isConnected, setIsConnected] = useState(false);
+    const [message, setMessage] = useState(null); // Mesaj durumu
+    const [deviceData, setDeviceData] = useState({}); // Her cihaza özel veriler
 
     useEffect(() => {
         const fetchDevices = async () => {
@@ -19,37 +24,180 @@ const DeviceList = () => {
         };
 
         fetchDevices();
+
+        // WebSocket bağlantısı kurma
+        const ws = new WebSocket("ws://localhost:5000/ws");
+        ws.onopen = () => {
+            console.log("WebSocket connected");
+            setIsConnected(true);
+        };
+        ws.onmessage = (event) => {
+            try {
+                // Mesajı özel bir parser ile ayrıştır
+                const parsedData = parseSnmpMessage(event.data);
+                const { oid, value } = parsedData;
+
+                // Gelen verileri cihaz ID'sine göre sakla
+                setDeviceData((prevData) => ({
+                    ...prevData,
+                    [oid]: value,
+                }));
+            } catch (error) {
+                console.error("Hatalı mesaj:", event.data, "Hata:", error.message);
+            }
+        };
+        ws.onclose = () => {
+            console.log("WebSocket disconnected");
+            setIsConnected(false);
+        };
+        ws.onerror = (error) => {
+            console.error("WebSocket error:", error);
+        };
+        setWebSocket(ws);
+
+        return () => {
+            if (ws) ws.close();
+        };
     }, []);
 
+    const startCommunication = (deviceId, ipAddress) => {
+        if (webSocket) {
+            const message = {
+                action: "startcommunication",
+                parameters: { deviceId, ipAddress },
+            };
+            webSocket.send(JSON.stringify(message));
+            console.log(`Start communication command sent for Device ID: ${deviceId}`);
+            setMessage({ type: "success", text: "Command was sent successfully!" });
+            setTimeout(() => setMessage(null), 3000);
+        } else {
+            setMessage({ type: "error", text: "WebSocket is not connected!" });
+            setTimeout(() => setMessage(null), 3000);
+        }
+    };
+
+    const stopCommunication = () => {
+        if (webSocket) {
+            const message = { action: "stopcommunication" };
+            webSocket.send(JSON.stringify(message));
+            console.log("Stop communication command sent.");
+            setMessage({ type: "success", text: "Stop command was sent successfully!" });
+            setTimeout(() => setMessage(null), 3000);
+        } else {
+            setMessage({ type: "error", text: "WebSocket is not connected!" });
+            setTimeout(() => setMessage(null), 3000);
+        }
+    };
+
+    // SNMP mesajlarını parse eden özel fonksiyon
+    const parseSnmpMessage = (message) => {
+        if (!message.startsWith("OID")) {
+            throw new Error("Invalid message format");
+        }
+
+        const dataPart = message.substring(4).trim(); // "1.2.3.1: 240,00" kısmını al
+        const [oid, valuePart] = dataPart.split(":");
+
+        if (!oid || !valuePart) {
+            throw new Error("Message format is incorrect");
+        }
+
+        // Virgül yerine nokta koyarak sayıya çevir
+        const value = parseFloat(valuePart.replace(",", "."));
+
+        if (isNaN(value)) {
+            throw new Error("Value is not a valid number");
+        }
+
+        return { oid: oid.trim(), value };
+    };
+
     return (
-        <div className="device-list-container">
-            <h2>Device List</h2>
-            {loading ? (
-                <p>Loading...</p>
-            ) : (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Device Name</th>
-                            <th>IP Address</th>
-                            <th>Port</th>
-                            <th>OID List</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {devices.map((device) => (
-                            <tr key={device.id}>
-                                <td>{device.deviceName}</td>
-                                <td>{device.ipAddress}</td>
-                                <td>{device.port}</td>
-                                <td>{device.oidList.join(", ")}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+        <div className="device-list-page">
+            {/* Mesaj Gösterimi */}
+            {message && (
+                <div className={`message-box ${message.type}`}>
+                    {message.type === "success" ? "✔️" : "❌"} {message.text}
+                </div>
             )}
+
+            <div className="device-list-container">
+                <h2>Device List with Communication</h2>
+                {loading ? (
+                    <p>Loading...</p>
+                ) : (
+                    <>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Device Name</th>
+                                    <th>IP Address</th>
+                                    <th>Port</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {devices.map((device) => (
+                                    <tr key={device.id}>
+                                        <td>{device.deviceName}</td>
+                                        <td>{device.ipAddress}</td>
+                                        <td>{device.port}</td>
+                                        <td style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+                                            <button
+                                                onClick={() => startCommunication(device.id, device.ipAddress)}
+                                                style={{
+                                                    background: "none",
+                                                    border: "none",
+                                                    cursor: "pointer",
+                                                    fontSize: "20px",
+                                                    color: "#4caf50",
+                                                }}
+                                            >
+                                                <FaPlayCircle />
+                                            </button>
+                                            <button
+                                                onClick={stopCommunication}
+                                                style={{
+                                                    background: "none",
+                                                    border: "none",
+                                                    cursor: "pointer",
+                                                    fontSize: "20px",
+                                                    color: "#f44336",
+                                                }}
+                                            >
+                                                <FaRegStopCircle />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+
+                        {/* Her cihaz için verileri göster */}
+                        {Object.entries(deviceData).map(([oid, value]) => (
+                            <div key={oid} className="device-data-section">
+                                <h3>Data for OID: {oid}</h3>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Parameter Name</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>{oid}</td>
+                                            <td>{value}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        ))}
+                    </>
+                )}
+            </div>
         </div>
     );
 };
 
-export default DeviceList;
+export default DeviceListWithCommunication;

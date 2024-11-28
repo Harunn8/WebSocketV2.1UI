@@ -1,17 +1,69 @@
-.device-list-container {
-    max-width: 800px;
-    margin: 0 auto;
+body {
+    margin: 0;
+    padding: 0;
     font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+}
+
+.device-list-page {
+    position: relative;
+}
+
+.device-list-container {
+    margin-top: 70px; /* Yukarıdan boşluk eklendi */
+    padding: 20px;
+    border-radius: 10px;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.device-list-container h2 {
+    text-align: center;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 20px;
 }
 
-th,
-td {
+table th,
+table td {
+    border: 1px solid #ddd;
     padding: 10px;
-    border: 1px solid white;
-    text-align: left;
+    text-align: center;
+}
+
+table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.message-box {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 15px 20px;
+    border-radius: 5px;
+    background-color: white;
+    color: black;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    text-align: center;
+}
+
+.message-box.success {
+    border: 2px solid #4caf50;
+    color: #4caf50;
+}
+
+.message-box.error {
+    border: 2px solid #f44336;
+    color: #f44336;
 }
