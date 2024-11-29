@@ -4,10 +4,10 @@ import "./snmp.css";
 const WebSocketComponent = () => {
     const [socket, setSocket] = useState(null);
     const [ipAddress, setIpAddress] = useState("");
-    const [data, setData] = useState({});
+    const [data, setData] = useState({}); // Parametre ve değerleri saklamak için obje
     const [status, setStatus] = useState("Disconnected");
     const [isVisible, setIsVisible] = useState(true); // Yanıp sönme durumu
-    const [isTableVisible, setIsTableVisible] = useState(true);
+    const [isTableVisible, setIsTableVisible] = useState(true); // Tablo görünürlüğü kontrolü
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -26,9 +26,11 @@ const WebSocketComponent = () => {
 
         ws.onmessage = (event) => {
             try {
+                // Mesajı özel bir parser ile ayrıştır
                 const parsedData = parseSnmpMessage(event.data);
                 const { oid, value } = parsedData;
 
+                // Gelen parametre ve değerleri güncelle
                 setData((prevData) => ({
                     ...prevData,
                     [oid]: value,
@@ -46,18 +48,14 @@ const WebSocketComponent = () => {
         return () => ws.close();
     }, []);
 
+    // Yanıp sönme efekti için useEffect
     useEffect(() => {
-        let interval;
-        if (status === "Connected") {
-            interval = setInterval(() => {
-                setIsVisible((prev) => !prev);
-            }, 500); // 500ms aralıkla yanıp sönme
-        } else {
-            setIsVisible(true); // Bağlantı yoksa görünür bırak
-        }
+        const interval = setInterval(() => {
+            setIsVisible((prev) => !prev);
+        }, 500); // 500ms aralıkla yanıp sönme
 
         return () => clearInterval(interval); // Cleanup
-    }, [status]);
+    }, []);
 
     const startCommunication = () => {
         if (!ipAddress) {
@@ -72,7 +70,7 @@ const WebSocketComponent = () => {
                 },
             };
             socket.send(JSON.stringify(command));
-            setIsTableVisible(true);
+            setIsTableVisible(true); // Tabloyu görünür yap
         } else {
             alert("WebSocket bağlantısı henüz kurulmadı.");
         }
@@ -82,7 +80,7 @@ const WebSocketComponent = () => {
         if (socket) {
             const command = { action: "stopCommunication" };
             socket.send(JSON.stringify(command));
-            setIsTableVisible(false);
+            setIsTableVisible(false); // Tabloyu gizle
         }
     };
 
@@ -90,19 +88,22 @@ const WebSocketComponent = () => {
         setData({});
     };
 
+    // SNMP mesajlarını parse eden özel fonksiyon
     const parseSnmpMessage = (message) => {
         if (!message.startsWith("OID")) {
             throw new Error("Invalid message format");
         }
 
-        const dataPart = message.substring(4).trim();
+        const dataPart = message.substring(4).trim(); // "1.2.3.1: 289,89" kısmını al
         const [oid, valuePart] = dataPart.split(":");
 
         if (!oid || !valuePart) {
             throw new Error("Message format is incorrect");
         }
 
+        // Virgül yerine nokta koyarak sayıya çevir
         const value = parseFloat(valuePart.replace(",", "."));
+
         if (isNaN(value)) {
             throw new Error("Value is not a valid number");
         }
@@ -162,7 +163,7 @@ const WebSocketComponent = () => {
             <div
                 className={`alarm-icon ${status === "Connected" ? "connected" : ""}`}
                 style={{
-                    opacity: status === "Connected" && isVisible ? 1 : 0,
+                    opacity: isVisible ? 1 : 0, // Yanıp sönme efekti
                 }}
             ></div>
         </div>
