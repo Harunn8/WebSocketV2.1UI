@@ -6,6 +6,10 @@ const Login = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const token = localStorage.getItem("token");
+
+    // Uygulama versiyonu
+    const APP_VERSION = "1.0.0";
+
     const handleLogin = async () => {
         try {
             const response = await fetch("http://localhost:5000/api/Login/authenticate", {
@@ -21,8 +25,7 @@ const Login = () => {
                 console.log("data", data);
 
                 localStorage.setItem("token", JSON.stringify(data.token)); // Token'ı kaydet
-                window.location.href = "/snmp" // SNMP ekranına yönlendir
-
+                window.location.href = "/snmp"; // SNMP ekranına yönlendir
             } else {
                 setError("Invalid username or password");
             }
@@ -30,16 +33,12 @@ const Login = () => {
             setError("An error occurred while logging in. Please try again.");
         }
     };
+
     useEffect(() => {
         // Kullanıcı giriş yapmış mı kontrol et
-
         if (token) {
-
-            window.location.href = "/snmp"// Login ekranına yönlendir
-
+            window.location.href = "/snmp"; // SNMP ekranına yönlendir
         }
-
-
     }, [token]);
 
     return (
@@ -63,6 +62,11 @@ const Login = () => {
             <button onClick={handleLogin} className="login-button">
                 Login
             </button>
+
+            {/* Uygulama versiyonunu göster */}
+            <div className="app-version">
+                <p>Version: {APP_VERSION}</p>
+            </div>
         </div>
     );
 };

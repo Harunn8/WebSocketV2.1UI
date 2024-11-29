@@ -1,98 +1,85 @@
-body {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
+/* Tüm sayfa düzeni */
+/* Tüm sayfa düzeni */
+/* Tüm sayfa düzeni */
+.snmpcommunication {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-color: #f4f4f4;
-    font-family: Arial, sans-serif;
-}
-
-.snmpcommunication {
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 1200px;
-    background-color: white;
-    margin: 50px;
+    width: calc(100vw - 180px); /* Menü genişliğini çıkararak içeriği tam oturt */
+    height: 100vh; /* Tam yükseklik */
+    margin-left: 0px; /* Menüye uygun boşluk */
+    background-color: #f9f9f9; /* İsteğe bağlı arka plan */
+    padding: 20px;
     box-sizing: border-box;
-    position: relative;
+    overflow: hidden; /* İçerik taşmasını engelle */
 }
 
-.snmp-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    text-align: center;
+/* Body ve HTML için genel scroll kapatma */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Yatay ve dikey scroll barları kapat */
 }
 
+/* SNMP içerik düzenlemesi */
 .snmp-content {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    width: 100%;
+    max-width: 600px; /* İsteğe bağlı maksimum genişlik */
 }
 
-.snmp-content input {
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-.snmp-content button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-    background-color: #007bff;
-    color: white;
-    transition: background-color 0.3s ease;
-}
-
-.snmp-content button:hover {
-    background-color: #0056b3;
-}
-
+/* Tablo düzenlemesi */
 .snmp-data {
+    width: 100%;
+    max-width: 600px;
     margin-top: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    max-height: 200px;
-    overflow-y: auto;
-    background-color: #f9f9f9;
+    overflow-x: auto; /* Taşan geniş tabloyu kaydırılabilir yap */
 }
 
-.clear-button {
-    margin-top: 10px;
-    padding: 10px 20px;
-    font-size: 14px;
-    cursor: pointer;
-    background-color: #ff4d4d;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
+.snmp-data table {
+    width: 100%;
+    border-collapse: collapse;
 }
 
-.clear-button:hover {
-    background-color: #cc0000;
+.snmp-data th,
+.snmp-data td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
 }
 
+.snmp-data th {
+    background-color: #f4f4f4;
+}
+
+/* Alarm ikonu */
 .alarm-icon {
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-color: red; /* Varsayılan renk kırmızı */
-    transition: opacity 0.5s ease; /* Yumuşak geçiş */
+    background-color: red; /* Varsayılan renk */
+    transition: opacity 0.3s ease-in-out, background-color 0.3s ease-in-out;
+    opacity: 0;
 }
 
 .alarm-icon.connected {
-    background-color: green; /* Bağlantı kurulduğunda yeşil */
+    background-color: green; /* Bağlıyken yeşil */
+    opacity: 1;
+}
+
+/* Status ve Alarm İkonu */
+.status-alarm {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #444;
 }
