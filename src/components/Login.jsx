@@ -8,7 +8,7 @@ const Login = () => {
     const token = localStorage.getItem("token");
 
     // Uygulama versiyonu
-    const APP_VERSION = "1.0.0";
+    const APP_VERSION = "1.1.2";
 
     const handleLogin = async () => {
         try {
