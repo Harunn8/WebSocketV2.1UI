@@ -174,9 +174,10 @@ const DeviceListWithCommunication = () => {
                         </table>
 
                         {/* Her cihaz için verileri göster */}
-                        {Object.entries(deviceData).map(([oid, value]) => (
-                            <div key={oid} className="device-data-section">
-                                <h3>Data for OID: {oid}</h3>
+                        <div style={{ maxHeight: "550px", overflow: "scroll" }} >
+
+                            <div className="device-data-section">
+                                <h3>Data for OID:</h3>
                                 <table>
                                     <thead>
                                         <tr>
@@ -185,14 +186,20 @@ const DeviceListWithCommunication = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>{oid}</td>
-                                            <td>{value}</td>
-                                        </tr>
+                                        {Object.entries(deviceData).map(([oid, value]) => {
+                                            return (
+                                                < tr>
+                                                    <td>{oid}</td>
+                                                    <td>{value}</td>
+                                                </tr >
+                                            )
+                                        })} 
                                     </tbody>
                                 </table>
                             </div>
-                        ))}
+
+                        </div>
+
                     </>
                 )}
             </div>

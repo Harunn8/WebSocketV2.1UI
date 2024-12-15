@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from "react-router-dom";
 import Login from "./Login";
 import SNMP from "./WebSocketComponent";
@@ -11,7 +11,8 @@ import { CommunicationProvider } from "./CommunicationContext"; // Haberleşme d
 
 const App = () => {
     const isLoggedIn = !!localStorage.getItem("token");
-
+    const [status, setStatus] = useState("Disconnected");
+    const [isVisible, setIsVisible] = useState(true);
     return (
         <CommunicationProvider>
             <Router>
@@ -61,6 +62,18 @@ const App = () => {
                                         Settings
                                     </Link>
                                 </li>
+                                <li style={{ position: "absolute", bottom: 22,width:"60%" }}>
+                                    <div style={{display:"flex",marginLeft: "10px"}}>
+                                    <div style={{flex:1}}>{status}</div>
+                                      <div
+                                        className={`alarm-icon ${status === "Connected" ? "connected" : ""}`}
+                                        style={{
+                                            opacity: isVisible ? 1 : 0, // Yanıp sönme efekti 
+                                            
+                                        }}
+                                    /> 
+                                  </div>
+                                </li>
                                 <li>
                                     <button
                                         onClick={() => {
@@ -96,7 +109,7 @@ const App = () => {
                     <div style={{ flex: 1, padding: "20px", marginLeft: isLoggedIn ? "200px" : "0" }}>
                         <Routes>
                             <Route path="/login" element={<Login />} />
-                            <Route path="/snmp" element={isLoggedIn ? <SNMP /> : <Navigate to="/login" />} />
+                            <Route path="/snmp" element={isLoggedIn ? <SNMP status={status} setStatus={setStatus} isVisible={isVisible} setIsVisible={setIsVisible} /> : <Navigate to="/login" />} />
                             <Route path="/add-device" element={isLoggedIn ? <DeviceAdd /> : <Navigate to="/login" />} />
                             <Route path="/device-list" element={isLoggedIn ? <DeviceList /> : <Navigate to="/login" />} />
                             <Route path="/devices" element={isLoggedIn ? <Devices /> : <Navigate to="/login" />} />

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import "./snmp.css";
 
-const WebSocketComponent = () => {
+const WebSocketComponent = ({status,setStatus,isVisible,setIsVisible}) => {
     const [socket, setSocket] = useState(null);
     const [ipAddress, setIpAddress] = useState("");
     const [data, setData] = useState({}); // Parametre ve değerleri saklamak için obje
-    const [status, setStatus] = useState("Disconnected");
-    const [isVisible, setIsVisible] = useState(true); // Yanıp sönme durumu
+    
+     // Yanıp sönme durumu
     const [isTableVisible, setIsTableVisible] = useState(true); // Tablo görünürlüğü kontrolü
 
     useEffect(() => {
@@ -160,12 +160,7 @@ const WebSocketComponent = () => {
                     Clear
                 </button>
             </div>
-            <div
-                className={`alarm-icon ${status === "Connected" ? "connected" : ""}`}
-                style={{
-                    opacity: isVisible ? 1 : 0, // Yanıp sönme efekti
-                }}
-            ></div>
+            
         </div>
     );
 };
