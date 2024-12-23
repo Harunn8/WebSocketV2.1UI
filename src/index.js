@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css'; // Eğer bir CSS dosyanız yoksa bu satırı silebilirsiniz
+import './index.css';
 import WebSocketComponent from './components/WebSocketComponent';
 import App from './components/App';
 

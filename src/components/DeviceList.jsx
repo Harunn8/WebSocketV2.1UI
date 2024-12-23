@@ -7,8 +7,8 @@ const DeviceListWithCommunication = () => {
     const [loading, setLoading] = useState(true);
     const [webSocket, setWebSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
-    const [message, setMessage] = useState(null); // Mesaj durumu
-    const [deviceData, setDeviceData] = useState({}); // Her cihaza özel veriler
+    const [message, setMessage] = useState(null);
+    const [deviceData, setDeviceData] = useState({});
 
     useEffect(() => {
         const fetchDevices = async () => {
@@ -25,7 +25,6 @@ const DeviceListWithCommunication = () => {
 
         fetchDevices();
 
-        // WebSocket bağlantısı kurma
         const ws = new WebSocket("ws://localhost:5000/ws");
         ws.onopen = () => {
             console.log("WebSocket connected");
@@ -33,11 +32,9 @@ const DeviceListWithCommunication = () => {
         };
         ws.onmessage = (event) => {
             try {
-                // Mesajı özel bir parser ile ayrıştır
                 const parsedData = parseSnmpMessage(event.data);
                 const { oid, value } = parsedData;
 
-                // Gelen verileri cihaz ID'sine göre sakla
                 setDeviceData((prevData) => ({
                     ...prevData,
                     [oid]: value,
@@ -89,20 +86,18 @@ const DeviceListWithCommunication = () => {
         }
     };
 
-    // SNMP mesajlarını parse eden özel fonksiyon
     const parseSnmpMessage = (message) => {
         if (!message.startsWith("OID")) {
             throw new Error("Invalid message format");
         }
 
-        const dataPart = message.substring(4).trim(); // "1.2.3.1: 240,00" kısmını al
+        const dataPart = message.substring(4).trim();
         const [oid, valuePart] = dataPart.split(":");
 
         if (!oid || !valuePart) {
             throw new Error("Message format is incorrect");
         }
 
-        // Virgül yerine nokta koyarak sayıya çevir
         const value = parseFloat(valuePart.replace(",", "."));
 
         if (isNaN(value)) {
@@ -114,7 +109,7 @@ const DeviceListWithCommunication = () => {
 
     return (
         <div className="device-list-page">
-            {/* Mesaj Gösterimi */}
+            { }
             {message && (
                 <div className={`message-box ${message.type}`}>
                     {message.type === "success" ? "✔️" : "❌"} {message.text}
@@ -173,7 +168,7 @@ const DeviceListWithCommunication = () => {
                             </tbody>
                         </table>
 
-                        {/* Her cihaz için verileri göster */}
+                        { }
                         <div style={{ maxHeight: "550px", overflow: "scroll" }} >
 
                             <div className="device-data-section">
@@ -193,7 +188,7 @@ const DeviceListWithCommunication = () => {
                                                     <td>{value}</td>
                                                 </tr >
                                             )
-                                        })} 
+                                        })}
                                     </tbody>
                                 </table>
                             </div>

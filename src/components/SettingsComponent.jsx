@@ -3,11 +3,10 @@ import React, { useState, useEffect } from "react";
 const UserManagementComponent = () => {
     const [users, setUsers] = useState([]);
     const [userName, setUserName] = useState("");
-    const [password, setPassword] = useState(""); // Password for Add User
-    const [selectedUser, setSelectedUser] = useState(null); // Selected user for update
+    const [password, setPassword] = useState("");
+    const [selectedUser, setSelectedUser] = useState(null);
     const [message, setMessage] = useState("");
 
-    // Fetch all users
     const fetchUsers = async () => {
         try {
             const response = await fetch("http://localhost:5000/api/User", {
@@ -26,7 +25,6 @@ const UserManagementComponent = () => {
         }
     };
 
-    // Add or Update User
     const handleSaveUser = async () => {
         try {
             const url = selectedUser
@@ -43,7 +41,7 @@ const UserManagementComponent = () => {
                 },
                 body: JSON.stringify({
                     userName,
-                    password: !selectedUser ? password : undefined, // Only send password on add
+                    password: !selectedUser ? password : undefined,
                 }),
             });
 
@@ -63,7 +61,6 @@ const UserManagementComponent = () => {
         }
     };
 
-    // Delete a user
     const handleDeleteUser = async (id) => {
         try {
             const response = await fetch(`http://localhost:5000/api/User/${id}`, {
@@ -84,7 +81,6 @@ const UserManagementComponent = () => {
         }
     };
 
-    // Populate form with user data for editing
     const handleEditUser = (user) => {
         setSelectedUser(user);
         setUserName(user.userName);
@@ -100,7 +96,7 @@ const UserManagementComponent = () => {
 
             {message && <p style={{ color: "red", marginTop: "10px" }}>{message}</p>}
 
-            {/* User Form */}
+            { }
             <div style={{ marginBottom: "20px" }}>
                 <h3>{selectedUser ? "Update User" : "Add User"}</h3>
                 <label>User Name</label>
@@ -170,7 +166,7 @@ const UserManagementComponent = () => {
                 )}
             </div>
 
-            {/* User Table */}
+            { }
             <div>
                 <h3>Existing Users</h3>
                 <table

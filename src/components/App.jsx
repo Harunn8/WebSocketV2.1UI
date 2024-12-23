@@ -4,10 +4,10 @@ import Login from "./Login";
 import SNMP from "./WebSocketComponent";
 import DeviceAdd from "./DeviceAdd";
 import DeviceList from "./DeviceList";
-import Devices from "./Devices"; // Yeni eklenen Devices bileşeni
+import Devices from "./Devices";
 import SettingsComponent from "./SettingsComponent";
 import { FaCogs } from "react-icons/fa";
-import { CommunicationProvider } from "./CommunicationContext"; // Haberleşme durumu için Context
+import { CommunicationProvider } from "./CommunicationContext";
 
 const App = () => {
     const isLoggedIn = !!localStorage.getItem("token");
@@ -17,7 +17,7 @@ const App = () => {
         <CommunicationProvider>
             <Router>
                 <div style={{ display: "flex", height: "100vh" }}>
-                    {/* Sol Menü */}
+                    {}
                     {isLoggedIn && (
                         <nav
                             style={{
@@ -53,7 +53,7 @@ const App = () => {
                                 </li>
                                 <li style={{ marginBottom: "15px" }}>
                                     <Link to="/devices" style={menuLinkStyle}>
-                                        Devices {/* Yeni eklenen menü */}
+                                        Devices {}
                                     </Link>
                                 </li>
                                 <li style={{ marginBottom: "15px" }}>
@@ -68,7 +68,7 @@ const App = () => {
                                       <div
                                         className={`alarm-icon ${status === "Connected" ? "connected" : ""}`}
                                         style={{
-                                            opacity: isVisible ? 1 : 0, // Yanıp sönme efekti 
+                                            opacity: isVisible ? 1 : 0,
                                             
                                         }}
                                     /> 

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import "./snmp.css";
 
-const WebSocketComponent = ({status,setStatus,isVisible,setIsVisible}) => {
+const WebSocketComponent = ({ status, setStatus, isVisible, setIsVisible }) => {
     const [socket, setSocket] = useState(null);
     const [ipAddress, setIpAddress] = useState("");
-    const [data, setData] = useState({}); // Parametre ve değerleri saklamak için obje
-    
-     // Yanıp sönme durumu
-    const [isTableVisible, setIsTableVisible] = useState(true); // Tablo görünürlüğü kontrolü
+    const [data, setData] = useState({});
+
+    const [isTableVisible, setIsTableVisible] = useState(true);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -20,41 +19,38 @@ const WebSocketComponent = ({status,setStatus,isVisible,setIsVisible}) => {
         setSocket(ws);
 
         ws.onopen = () => {
-            console.log("WebSocket bağlantısı kuruldu");
+            console.log("WebSocket was connect");
             setStatus("Connected");
         };
 
         ws.onmessage = (event) => {
             try {
-                // Mesajı özel bir parser ile ayrıştır
                 const parsedData = parseSnmpMessage(event.data);
                 const { oid, value } = parsedData;
 
-                // Gelen parametre ve değerleri güncelle
                 setData((prevData) => ({
                     ...prevData,
                     [oid]: value,
                 }));
             } catch (error) {
-                console.error("Hatalı mesaj:", event.data, "Hata:", error.message);
+                console.error("Wrong Message:", event.data, "Error:", error.message);
             }
         };
 
         ws.onclose = () => {
-            console.log("WebSocket bağlantısı kapandı");
+            console.log("WebSocket connection was close");
             setStatus("Disconnected");
         };
 
         return () => ws.close();
     }, []);
 
-    // Yanıp sönme efekti için useEffect
     useEffect(() => {
         const interval = setInterval(() => {
             setIsVisible((prev) => !prev);
-        }, 500); // 500ms aralıkla yanıp sönme
+        }, 500);
 
-        return () => clearInterval(interval); // Cleanup
+        return () => clearInterval(interval);
     }, []);
 
     const startCommunication = () => {
@@ -70,9 +66,9 @@ const WebSocketComponent = ({status,setStatus,isVisible,setIsVisible}) => {
                 },
             };
             socket.send(JSON.stringify(command));
-            setIsTableVisible(true); // Tabloyu görünür yap
+            setIsTableVisible(true);
         } else {
-            alert("WebSocket bağlantısı henüz kurulmadı.");
+            alert("WebSocket connection establish is not yet");
         }
     };
 
@@ -80,7 +76,7 @@ const WebSocketComponent = ({status,setStatus,isVisible,setIsVisible}) => {
         if (socket) {
             const command = { action: "stopCommunication" };
             socket.send(JSON.stringify(command));
-            setIsTableVisible(false); // Tabloyu gizle
+            setIsTableVisible(false);
         }
     };
 
@@ -88,20 +84,18 @@ const WebSocketComponent = ({status,setStatus,isVisible,setIsVisible}) => {
         setData({});
     };
 
-    // SNMP mesajlarını parse eden özel fonksiyon
     const parseSnmpMessage = (message) => {
         if (!message.startsWith("OID")) {
             throw new Error("Invalid message format");
         }
 
-        const dataPart = message.substring(4).trim(); // "1.2.3.1: 289,89" kısmını al
+        const dataPart = message.substring(4).trim();
         const [oid, valuePart] = dataPart.split(":");
 
         if (!oid || !valuePart) {
             throw new Error("Message format is incorrect");
         }
 
-        // Virgül yerine nokta koyarak sayıya çevir
         const value = parseFloat(valuePart.replace(",", "."));
 
         if (isNaN(value)) {
@@ -160,7 +154,7 @@ const WebSocketComponent = ({status,setStatus,isVisible,setIsVisible}) => {
                     Clear
                 </button>
             </div>
-            
+
         </div>
     );
 };

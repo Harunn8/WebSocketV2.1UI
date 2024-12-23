@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "./login.css"; // Eğer bir CSS dosyanız varsa
+import "./login.css";
 
 const Login = () => {
     const [username, setUsername] = useState("");
@@ -7,7 +7,6 @@ const Login = () => {
     const [error, setError] = useState("");
     const token = localStorage.getItem("token");
 
-    // Uygulama versiyonu
     const APP_VERSION = "1.1.2";
 
     const handleLogin = async () => {
@@ -24,8 +23,8 @@ const Login = () => {
                 const data = await response.json();
                 console.log("data", data);
 
-                localStorage.setItem("token", JSON.stringify(data.token)); // Token'ı kaydet
-                window.location.href = "/snmp"; // SNMP ekranına yönlendir
+                localStorage.setItem("token", JSON.stringify(data.token));
+                window.location.href = "/snmp";
             } else {
                 setError("Invalid username or password");
             }
@@ -35,9 +34,8 @@ const Login = () => {
     };
 
     useEffect(() => {
-        // Kullanıcı giriş yapmış mı kontrol et
         if (token) {
-            window.location.href = "/snmp"; // SNMP ekranına yönlendir
+            window.location.href = "/snmp";
         }
     }, [token]);
 
@@ -63,7 +61,7 @@ const Login = () => {
                 Login
             </button>
 
-            {/* Uygulama versiyonunu göster */}
+            { }
             <div className="app-version">
                 <p>Version: {APP_VERSION}</p>
             </div>

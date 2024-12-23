@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import "./devices.css";
 
 const Devices = () => {
-    const [data, setData] = useState({}); // OID ve değer çiftleri
+    const [data, setData] = useState({});
     const [webSocket, setWebSocket] = useState(null);
 
     useEffect(() => {
-        // WebSocket bağlantısını başlat
         const ws = new WebSocket("ws://localhost:5000/ws");
 
         ws.onopen = () => {
@@ -15,7 +14,7 @@ const Devices = () => {
 
         ws.onmessage = (event) => {
             try {
-                const receivedData = JSON.parse(event.data); // OID ve değer JSON formatında
+                const receivedData = JSON.parse(event.data);
                 setData((prevData) => ({
                     ...prevData,
                     [receivedData.oid]: receivedData.value,

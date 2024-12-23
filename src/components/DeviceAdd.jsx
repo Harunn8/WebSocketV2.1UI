@@ -10,7 +10,7 @@ const DeviceAdd = () => {
 
     const handleAddDevice = async () => {
         if (!deviceName || !ipAddress || !port || !oidList) {
-            setMessage("Lütfen tüm alanları doldurun.");
+            setMessage("Please fill in all fields.");
             return;
         }
 
@@ -29,7 +29,7 @@ const DeviceAdd = () => {
             });
 
             if (response.ok) {
-                setMessage("Cihaz başarıyla eklendi.");
+                setMessage("Device added successfully");
                 setDeviceName("");
                 setIpAddress("");
                 setPort("");
@@ -39,7 +39,7 @@ const DeviceAdd = () => {
                 setMessage(`Hata: ${error.message}`);
             }
         } catch (err) {
-            setMessage("Sunucu hatası. Lütfen tekrar deneyin.");
+            setMessage("Server Error, please try again later");
         }
     };
 
