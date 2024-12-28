@@ -7,7 +7,7 @@ const Login = () => {
     const [error, setError] = useState("");
     const token = localStorage.getItem("token");
 
-    const APP_VERSION = "1.1.2";
+    const APP_VERSION = "1.3.12";
 
     const handleLogin = async () => {
         try {
@@ -33,6 +33,14 @@ const Login = () => {
         }
     };
 
+    const handleKeyPress = (event) =>
+    {
+        if(event.key == "Enter")
+        {
+            handleLogin();
+        }
+    }
+
     useEffect(() => {
         if (token) {
             window.location.href = "/snmp";
@@ -41,13 +49,14 @@ const Login = () => {
 
     return (
         <div className="login-container">
-            <h2>Login</h2>
+            <h2 className ="login-title">Login</h2>
             {error && <p style={{ color: "red" }}>{error}</p>}
             <input
                 type="text"
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                onKeyDown={handleKeyPress}
                 className="login-input"
             />
             <input
@@ -55,6 +64,7 @@ const Login = () => {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={handleKeyPress}
                 className="login-input"
             />
             <button onClick={handleLogin} className="login-button">
@@ -64,6 +74,7 @@ const Login = () => {
             { }
             <div className="app-version">
                 <p>Version: {APP_VERSION}</p>
+                <p>Author: {"HK"}</p>
             </div>
         </div>
     );

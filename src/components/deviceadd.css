@@ -1,7 +1,7 @@
 .device-add-container {
-    padding: "";
-    width: 1600px;
-    margin: auto;
+    padding: 505px;
+    width: 1650px;
+    margin: -500px;
     background-color: #f9f9f9;
     border-radius: 10px;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
@@ -30,4 +30,19 @@ button {
 
 button:hover {
     background-color: #0056b3;
+}
+
+.addDeviceButton{
+    width: 300px;
+    margin-left: 700px;
+}
+
+.handlerRemoveMapping{
+    width: 100px;
+    margin-left: 0px;
+}
+
+.addOidParamButtton{
+    width: 300px;
+    margin-left: 700px;
 }

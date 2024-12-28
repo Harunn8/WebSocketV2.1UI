@@ -5,8 +5,15 @@ const WebSocketComponent = ({ status, setStatus, isVisible, setIsVisible }) => {
     const [socket, setSocket] = useState(null);
     const [ipAddress, setIpAddress] = useState("");
     const [data, setData] = useState({});
-
     const [isTableVisible, setIsTableVisible] = useState(true);
+    const [showNotification, setShowNotification] = useState(false);
+
+    const playNotificationSound = () => {
+        const audio = new Audio("/notification-22-270130.mp3");
+        audio.play().catch((error) => {
+            console.error("Audio playback failed:", error);
+        });
+    };
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -21,6 +28,7 @@ const WebSocketComponent = ({ status, setStatus, isVisible, setIsVisible }) => {
         ws.onopen = () => {
             console.log("WebSocket was connect");
             setStatus("Connected");
+            playNotificationSound();
         };
 
         ws.onmessage = (event) => {
@@ -40,6 +48,8 @@ const WebSocketComponent = ({ status, setStatus, isVisible, setIsVisible }) => {
         ws.onclose = () => {
             console.log("WebSocket connection was close");
             setStatus("Disconnected");
+            setShowNotification(true);
+            playNotificationSound();
         };
 
         return () => ws.close();
@@ -104,7 +114,7 @@ const WebSocketComponent = ({ status, setStatus, isVisible, setIsVisible }) => {
 
         return { oid: oid.trim(), value };
     };
-
+    
     return (
         <div className="snmpcommunication">
             <h2 className="snmp-title">SNMP Communication</h2>
@@ -112,19 +122,20 @@ const WebSocketComponent = ({ status, setStatus, isVisible, setIsVisible }) => {
             <div className="snmp-content">
                 <label>IP Address:</label>
                 <input
+                    className="enterIpAddress"
                     type="text"
                     value={ipAddress}
                     onChange={(e) => setIpAddress(e.target.value)}
                     placeholder="Enter IP address"
                 />
-                <button onClick={startCommunication}>Start Communication</button>
-                <button onClick={stopCommunication}>Stop Communication</button>
+                <button className="startbutton" onClick={startCommunication}>Start Communication</button>
+                <button className="stopbutton" onClick={stopCommunication}>Stop Communication</button>
                 <div className="snmp-data">
                     {isTableVisible ? (
                         <>
                             <h4>Gelen SNMP Verileri:</h4>
                             {Object.keys(data).length === 0 ? (
-                                <p>Henüz veri yok.</p>
+                                <p>No Data</p>
                             ) : (
                                 <table>
                                     <thead>
@@ -155,6 +166,10 @@ const WebSocketComponent = ({ status, setStatus, isVisible, setIsVisible }) => {
                 </button>
             </div>
 
+            {showNotification && (
+                <div className="notification">
+                </div>
+            )}
         </div>
     );
 };

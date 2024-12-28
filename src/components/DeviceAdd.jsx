@@ -116,7 +116,7 @@ const DeviceAdd = () => {
                 />
             </div>
 
-            <button onClick={handleAddMapping}>Add OID-Parameter Mapping</button>
+            <button className = "addOidParamButtton"onClick={handleAddMapping}>Add Parameters</button>
 
             <h3>OID-Parameter List</h3>
             {oidParameterList.length > 0 && (
@@ -134,7 +134,7 @@ const DeviceAdd = () => {
                                 <td>{mapping.oid}</td>
                                 <td>{mapping.parameterName}</td>
                                 <td>
-                                    <button onClick={() => handleRemoveMapping(index)}>Remove</button>
+                                    <button className ="handlerRemoveMapping" onClick={() => handleRemoveMapping(index)}>Remove</button>
                                 </td>
                             </tr>
                         ))}
@@ -142,7 +142,7 @@ const DeviceAdd = () => {
                 </table>
             )}
 
-            <button onClick={handleAddDevice}>Add Device</button>
+            <button className = "addDeviceButton"onClick={handleAddDevice}>Add Device</button>
         </div>
     );
 };

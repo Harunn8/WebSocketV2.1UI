@@ -9,6 +9,7 @@ const DeviceListWithCommunication = () => {
     const [isConnected, setIsConnected] = useState(false);
     const [message, setMessage] = useState(null);
     const [deviceData, setDeviceData] = useState({});
+    const [showNotification, setShowNotification] = useState(false);
 
     useEffect(() => {
         const fetchDevices = async () => {
@@ -56,6 +57,9 @@ const DeviceListWithCommunication = () => {
         ws.onclose = () => {
             console.log("WebSocket disconnected");
             setIsConnected(false);
+            setShowNotification(true);
+            playNotificationSound();
+            setTimeout(() => setShowNotification(false), 5000);
         };
 
         ws.onerror = (error) => {
@@ -77,7 +81,7 @@ const DeviceListWithCommunication = () => {
             };
             console.log("Sending WebSocket message:", JSON.stringify(message));
             webSocket.send(JSON.stringify(message));
-            setMessage({ type: "success", text: `Started communication with ${deviceId}` });
+            setMessage({ type: "success", text: `Communication Started` });
             setTimeout(() => setMessage(null), 3000);
         } else {
             setMessage({ type: "error", text: "WebSocket is not connected!" });
@@ -90,7 +94,7 @@ const DeviceListWithCommunication = () => {
             const message = { action: "stopcommunication", parameters: { deviceId } };
             console.log("Sending stop command:", JSON.stringify(message));
             webSocket.send(JSON.stringify(message));
-            setMessage({ type: "success", text: `Stopped communication with ${deviceId}` });
+            setMessage({ type: "error", text: `Communication Stopped` });
             setTimeout(() => setMessage(null), 3000);
         } else {
             setMessage({ type: "error", text: "WebSocket is not connected!" });
@@ -99,7 +103,7 @@ const DeviceListWithCommunication = () => {
     };
 
     const parseSnmpMessage = (message) => {
-        if (message.includes("Communication stopped")) {
+        if (message.includes("Communication Stopped")) {
             return null;
         }
 
@@ -115,11 +119,19 @@ const DeviceListWithCommunication = () => {
 
         throw new Error("Invalid message format");
     };
+
     const removeLeadingDot = (inputString) => {
         if (inputString.startsWith(".")) {
             return inputString.substring(1);
         }
         return inputString;
+    };
+
+    const playNotificationSound = () => {
+        const audio = new Audio("/notification-22-270130.mp3");
+        audio.play().catch((error) => {
+            console.error("Audio playback failed:", error);
+        });
     };
 
     return (
@@ -178,69 +190,38 @@ const DeviceListWithCommunication = () => {
                                             </button>
                                         </td>
                                     </tr>
-                                    {}
-                                    
-{/* {JSON.stringify(deviceData)} */}
-{/* {JSON.stringify(device.oidList)} */}
-<tr>
-                                            <td colSpan="4">
-                                                <table>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>OID</th>
-                                                            <th>Value</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    {device.oidList.map((item,index)=>{
-                                                        return (
-                                                            <tr key={index}> 
+                                    <tr>
+                                        <td colSpan="4">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>OID</th>
+                                                        <th>Value</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {device.oidList.map((item, index) => (
+                                                        <tr key={index}>
                                                             <td>{item.parameterName}</td>
                                                             <td>{deviceData[removeLeadingDot(item.oid)]}</td>
                                                         </tr>
-                                                        )
-                                                            
-                                    })}
-
-
-                                                        {/* {Object.entries(deviceData).map(([oid, value]) => (
-                                                            <tr key={oid}>
-                                                                <td>{oid}</td>
-                                                                <td>{value}</td>
-                                                            </tr>
-                                                        ))} */}
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    {/* {Object.keys(deviceData).length > 0 && (
-                                        <tr>
-                                            <td colSpan="4">
-                                                <table>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>OID</th>
-                                                            <th>Value</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {Object.entries(deviceData).map(([oid, value]) => (
-                                                            <tr key={oid}>
-                                                                <td>{oid}</td>
-                                                                <td>{value}</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    )} */}
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
                                 </React.Fragment>
                             ))}
                         </tbody>
                     </table>
                 )}
             </div>
+
+            {showNotification && (
+                <div className="notification">
+                    <p>Communication Down</p>
+                </div>
+            )}
         </div>
     );
 };
