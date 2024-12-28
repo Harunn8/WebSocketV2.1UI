@@ -3,14 +3,15 @@ import { FaPlayCircle, FaRegStopCircle } from "react-icons/fa";
 import "./deviceList.css";
 
 const DeviceListWithCommunication = () => {
-    const [devices, setDevices] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [webSocket, setWebSocket] = useState(null);
-    const [isConnected, setIsConnected] = useState(false);
-    const [message, setMessage] = useState(null);
-    const [deviceData, setDeviceData] = useState({});
+    const [devices, setDevices] = useState([]); // Cihaz listesini tutar
+    const [loading, setLoading] = useState(true); // Yükleme durumunu kontrol eder
+    const [webSocket, setWebSocket] = useState(null); // WebSocket bağlantısını tutar
+    const [isConnected, setIsConnected] = useState(false); // WebSocket bağlantı durumunu kontrol eder
+    const [message, setMessage] = useState(null); // Kullanıcıya bilgi mesajı göstermek için
+    const [deviceData, setDeviceData] = useState({}); // Her cihazın verilerini saklar
 
     useEffect(() => {
+        // Cihaz listesini API'den al
         const fetchDevices = async () => {
             try {
                 const response = await fetch("http://localhost:5000/api/device");
@@ -25,47 +26,64 @@ const DeviceListWithCommunication = () => {
 
         fetchDevices();
 
+        // WebSocket bağlantısını başlat
         const ws = new WebSocket("ws://localhost:5000/ws");
         ws.onopen = () => {
             console.log("WebSocket connected");
             setIsConnected(true);
         };
+
         ws.onmessage = (event) => {
+            console.log("Message received:", event.data);
             try {
-                const parsedData = parseSnmpMessage(event.data);
+                const parsedData = parseSnmpMessage(event.data); // Mesajı ayrıştır
+
+                // Eğer genel bir mesajsa, kullanıcıya göster ve işleme
+                if (!parsedData) {
+                    setMessage({ type: "info", text: event.data });
+                    setTimeout(() => setMessage(null), 3000);
+                    return;
+                }
+
                 const { oid, value } = parsedData;
 
+                // Veriyi OID'ye göre güncelle
                 setDeviceData((prevData) => ({
                     ...prevData,
-                    [oid]: value,
+                    [oid]: value, // OID ile ilişkilendir
                 }));
             } catch (error) {
-                console.error("Hatalı mesaj:", event.data, "Hata:", error.message);
+                console.error("Invalid message format:", event.data, "Error:", error.message);
             }
         };
+
         ws.onclose = () => {
             console.log("WebSocket disconnected");
             setIsConnected(false);
         };
+
         ws.onerror = (error) => {
             console.error("WebSocket error:", error);
         };
+
         setWebSocket(ws);
 
+        // Bileşen unmount olduğunda WebSocket'i kapat
         return () => {
             if (ws) ws.close();
         };
     }, []);
 
-    const startCommunication = (deviceId, ipAddress) => {
+    // İletişimi başlat
+    const startCommunication = (deviceId, ipAddress, port) => {
         if (webSocket) {
             const message = {
                 action: "startcommunication",
-                parameters: { deviceId, ipAddress },
+                parameters: { deviceId, ipAddress, port: port.toString() },
             };
+            console.log("Sending WebSocket message:", JSON.stringify(message));
             webSocket.send(JSON.stringify(message));
-            console.log(`Start communication command sent for Device ID: ${deviceId}`);
-            setMessage({ type: "success", text: "Command was sent successfully!" });
+            setMessage({ type: "success", text: `Started communication with ${deviceId}` });
             setTimeout(() => setMessage(null), 3000);
         } else {
             setMessage({ type: "error", text: "WebSocket is not connected!" });
@@ -73,12 +91,13 @@ const DeviceListWithCommunication = () => {
         }
     };
 
-    const stopCommunication = () => {
+    // İletişimi durdur
+    const stopCommunication = (deviceId) => {
         if (webSocket) {
-            const message = { action: "stopcommunication" };
+            const message = { action: "stopcommunication", parameters: { deviceId } };
+            console.log("Sending stop command:", JSON.stringify(message));
             webSocket.send(JSON.stringify(message));
-            console.log("Stop communication command sent.");
-            setMessage({ type: "success", text: "Stop command was sent successfully!" });
+            setMessage({ type: "success", text: `Stopped communication with ${deviceId}` });
             setTimeout(() => setMessage(null), 3000);
         } else {
             setMessage({ type: "error", text: "WebSocket is not connected!" });
@@ -86,30 +105,36 @@ const DeviceListWithCommunication = () => {
         }
     };
 
+    // Gelen mesajları ayrıştır
     const parseSnmpMessage = (message) => {
-        if (!message.startsWith("OID")) {
-            throw new Error("Invalid message format");
+        // Eğer mesaj genel bir "Communication stopped" mesajıysa, işleme
+        if (message.includes("Communication stopped")) {
+            return null; // Genel mesajları işleme
         }
 
-        const dataPart = message.substring(4).trim();
-        const [oid, valuePart] = dataPart.split(":");
-
-        if (!oid || !valuePart) {
-            throw new Error("Message format is incorrect");
+        // OID ve Value ayrıştırması
+        if (message.startsWith("OID")) {
+            const parts = message.split(":");
+            const oid = parts[0]?.replace("OID", "").trim(); // "OID" kısmını çıkar
+            const value = parts[1]?.trim(); // Değer kısmını al
+            if (!oid || value === undefined) {
+                throw new Error("Invalid message format");
+            }
+            return { oid, value };
         }
 
-        const value = parseFloat(valuePart.replace(",", "."));
-
-        if (isNaN(value)) {
-            throw new Error("Value is not a valid number");
+        throw new Error("Invalid message format");
+    };
+    const removeLeadingDot = (inputString) => {
+        // Eğer string . ile başlıyorsa ilk karakteri kaldır
+        if (inputString.startsWith(".")) {
+            return inputString.substring(1);
         }
-
-        return { oid: oid.trim(), value };
+        return inputString; // Değilse olduğu gibi döndür
     };
 
     return (
         <div className="device-list-page">
-            { }
             {message && (
                 <div className={`message-box ${message.type}`}>
                     {message.type === "success" ? "✔️" : "❌"} {message.text}
@@ -121,25 +146,25 @@ const DeviceListWithCommunication = () => {
                 {loading ? (
                     <p>Loading...</p>
                 ) : (
-                    <>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Device Name</th>
-                                    <th>IP Address</th>
-                                    <th>Port</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {devices.map((device) => (
-                                    <tr key={device.id}>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Device Name</th>
+                                <th>IP Address</th>
+                                <th>Port</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {devices.map((device) => (
+                                <React.Fragment key={device.id}>
+                                    <tr>
                                         <td>{device.deviceName}</td>
                                         <td>{device.ipAddress}</td>
                                         <td>{device.port}</td>
                                         <td style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
                                             <button
-                                                onClick={() => startCommunication(device.id, device.ipAddress)}
+                                                onClick={() => startCommunication(device.id, device.ipAddress, device.port)}
                                                 style={{
                                                     background: "none",
                                                     border: "none",
@@ -151,7 +176,7 @@ const DeviceListWithCommunication = () => {
                                                 <FaPlayCircle />
                                             </button>
                                             <button
-                                                onClick={stopCommunication}
+                                                onClick={() => stopCommunication(device.id)}
                                                 style={{
                                                     background: "none",
                                                     border: "none",
@@ -164,38 +189,67 @@ const DeviceListWithCommunication = () => {
                                             </button>
                                         </td>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                    {/* İlgili cihazın verilerini alt satırda göster */}
+                                    
+{/* {JSON.stringify(deviceData)} */}
+{/* {JSON.stringify(device.oidList)} */}
+<tr>
+                                            <td colSpan="4">
+                                                <table>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>OID</th>
+                                                            <th>Value</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    {device.oidList.map((item,index)=>{
+                                                        return (
+                                                            <tr key={index}> 
+                                                            <td>{item.parameterName}</td>
+                                                            <td>{deviceData[removeLeadingDot(item.oid)]}</td>
+                                                        </tr>
+                                                        )
+                                                            
+                                    })}
 
-                        { }
-                        <div style={{ maxHeight: "550px", overflow: "scroll" }} >
 
-                            <div className="device-data-section">
-                                <h3>Data for OID:</h3>
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Parameter Name</th>
-                                            <th>Value</th>
+                                                        {/* {Object.entries(deviceData).map(([oid, value]) => (
+                                                            <tr key={oid}>
+                                                                <td>{oid}</td>
+                                                                <td>{value}</td>
+                                                            </tr>
+                                                        ))} */}
+                                                    </tbody>
+                                                </table>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {Object.entries(deviceData).map(([oid, value]) => {
-                                            return (
-                                                < tr>
-                                                    <td>{oid}</td>
-                                                    <td>{value}</td>
-                                                </tr >
-                                            )
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                        </div>
-
-                    </>
+                                    {/* {Object.keys(deviceData).length > 0 && (
+                                        <tr>
+                                            <td colSpan="4">
+                                                <table>
+                                                    <thead>
+                                                        <tr>
+                                                            <th>OID</th>
+                                                            <th>Value</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {Object.entries(deviceData).map(([oid, value]) => (
+                                                            <tr key={oid}>
+                                                                <td>{oid}</td>
+                                                                <td>{value}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    )} */}
+                                </React.Fragment>
+                            ))}
+                        </tbody>
+                    </table>
                 )}
             </div>
         </div>
