@@ -4,7 +4,6 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
     overflow: hidden;
-    /* Yatay ve dikey kaydırmayı engeller */
     height: 100vh;
     display: flex;
     justify-content: flex-start;
@@ -16,20 +15,16 @@ body {
     height: 100%;
     display: flex;
     flex-direction: row;
-    /* Cihazları yatay hizalamak için */
     justify-content: flex-start;
     align-items: flex-start;
     overflow-x: auto;
-    /* İçerik fazla olursa yatay kaydırma */
     padding: 20px;
     box-sizing: border-box;
 }
 
 .device-container {
     width: 300px;
-    /* Her cihaz kutusu için genişlik */
     margin-right: 20px;
-    /* Cihazlar arasında boşluk */
     background-color: whitesmoke;
     border-radius: 10px;
     padding: 20px;
@@ -47,7 +42,6 @@ table {
     border-collapse: collapse;
     margin-top: 20px;
     table-layout: fixed;
-    /* Sütun genişliklerini sabitler */
 }
 
 table th,

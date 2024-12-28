@@ -1,44 +1,38 @@
-/* Tüm sayfa düzeni */
-/* Tüm sayfa düzeni */
-/* Tüm sayfa düzeni */
 .snmpcommunication {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: calc(100vw - 180px); /* Menü genişliğini çıkararak içeriği tam oturt */
-    height: 100vh; /* Tam yükseklik */
-    margin-left: 0px; /* Menüye uygun boşluk */
-    background-color: #f9f9f9; /* İsteğe bağlı arka plan */
+    width: calc(100vw - 180px);
+    height: 100vh;
+    margin-left: 0px;
+    background-color: #f9f9f9;
     padding: 20px;
     box-sizing: border-box;
-    overflow: hidden; /* İçerik taşmasını engelle */
+    overflow: hidden;
 }
 
-/* Body ve HTML için genel scroll kapatma */
 html, body {
     margin: 0;
     padding: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden; /* Yatay ve dikey scroll barları kapat */
+    overflow: hidden;
 }
 
-/* SNMP içerik düzenlemesi */
 .snmp-content {
     display: flex;
     flex-direction: column;
     gap: 15px;
     width: 100%;
-    max-width: 600px; /* İsteğe bağlı maksimum genişlik */
+    max-width: 600px;
 }
 
-/* Tablo düzenlemesi */
 .snmp-data {
     width: 100%;
     max-width: 600px;
     margin-top: 20px;
-    overflow-x: auto; /* Taşan geniş tabloyu kaydırılabilir yap */
+    overflow-x: auto;
 }
 
 .snmp-data table {
@@ -57,22 +51,20 @@ html, body {
     background-color: #f4f4f4;
 }
 
-/* Alarm ikonu */
 .alarm-icon {
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background-color: red; /* Varsayılan renk */
+    background-color: red;
     transition: opacity 0.3s ease-in-out, background-color 0.3s ease-in-out;
     opacity: 0;
 }
 
 .alarm-icon.connected {
-    background-color: green; /* Bağlıyken yeşil */
+    background-color: green;
     opacity: 1;
 }
 
-/* Status ve Alarm İkonu */
 .status-alarm {
     position: fixed;
     bottom: 10px;

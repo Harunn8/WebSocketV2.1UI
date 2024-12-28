@@ -3,15 +3,14 @@ import { FaPlayCircle, FaRegStopCircle } from "react-icons/fa";
 import "./deviceList.css";
 
 const DeviceListWithCommunication = () => {
-    const [devices, setDevices] = useState([]); // Cihaz listesini tutar
-    const [loading, setLoading] = useState(true); // Yükleme durumunu kontrol eder
-    const [webSocket, setWebSocket] = useState(null); // WebSocket bağlantısını tutar
-    const [isConnected, setIsConnected] = useState(false); // WebSocket bağlantı durumunu kontrol eder
-    const [message, setMessage] = useState(null); // Kullanıcıya bilgi mesajı göstermek için
-    const [deviceData, setDeviceData] = useState({}); // Her cihazın verilerini saklar
+    const [devices, setDevices] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [webSocket, setWebSocket] = useState(null);
+    const [isConnected, setIsConnected] = useState(false);
+    const [message, setMessage] = useState(null);
+    const [deviceData, setDeviceData] = useState({});
 
     useEffect(() => {
-        // Cihaz listesini API'den al
         const fetchDevices = async () => {
             try {
                 const response = await fetch("http://localhost:5000/api/device");
@@ -26,7 +25,6 @@ const DeviceListWithCommunication = () => {
 
         fetchDevices();
 
-        // WebSocket bağlantısını başlat
         const ws = new WebSocket("ws://localhost:5000/ws");
         ws.onopen = () => {
             console.log("WebSocket connected");
@@ -36,9 +34,8 @@ const DeviceListWithCommunication = () => {
         ws.onmessage = (event) => {
             console.log("Message received:", event.data);
             try {
-                const parsedData = parseSnmpMessage(event.data); // Mesajı ayrıştır
+                const parsedData = parseSnmpMessage(event.data);
 
-                // Eğer genel bir mesajsa, kullanıcıya göster ve işleme
                 if (!parsedData) {
                     setMessage({ type: "info", text: event.data });
                     setTimeout(() => setMessage(null), 3000);
@@ -47,10 +44,9 @@ const DeviceListWithCommunication = () => {
 
                 const { oid, value } = parsedData;
 
-                // Veriyi OID'ye göre güncelle
                 setDeviceData((prevData) => ({
                     ...prevData,
-                    [oid]: value, // OID ile ilişkilendir
+                    [oid]: value,
                 }));
             } catch (error) {
                 console.error("Invalid message format:", event.data, "Error:", error.message);
@@ -68,13 +64,11 @@ const DeviceListWithCommunication = () => {
 
         setWebSocket(ws);
 
-        // Bileşen unmount olduğunda WebSocket'i kapat
         return () => {
             if (ws) ws.close();
         };
     }, []);
 
-    // İletişimi başlat
     const startCommunication = (deviceId, ipAddress, port) => {
         if (webSocket) {
             const message = {
@@ -91,7 +85,6 @@ const DeviceListWithCommunication = () => {
         }
     };
 
-    // İletişimi durdur
     const stopCommunication = (deviceId) => {
         if (webSocket) {
             const message = { action: "stopcommunication", parameters: { deviceId } };
@@ -105,18 +98,15 @@ const DeviceListWithCommunication = () => {
         }
     };
 
-    // Gelen mesajları ayrıştır
     const parseSnmpMessage = (message) => {
-        // Eğer mesaj genel bir "Communication stopped" mesajıysa, işleme
         if (message.includes("Communication stopped")) {
-            return null; // Genel mesajları işleme
+            return null;
         }
 
-        // OID ve Value ayrıştırması
         if (message.startsWith("OID")) {
             const parts = message.split(":");
-            const oid = parts[0]?.replace("OID", "").trim(); // "OID" kısmını çıkar
-            const value = parts[1]?.trim(); // Değer kısmını al
+            const oid = parts[0]?.replace("OID", "").trim();
+            const value = parts[1]?.trim();
             if (!oid || value === undefined) {
                 throw new Error("Invalid message format");
             }
@@ -126,11 +116,10 @@ const DeviceListWithCommunication = () => {
         throw new Error("Invalid message format");
     };
     const removeLeadingDot = (inputString) => {
-        // Eğer string . ile başlıyorsa ilk karakteri kaldır
         if (inputString.startsWith(".")) {
             return inputString.substring(1);
         }
-        return inputString; // Değilse olduğu gibi döndür
+        return inputString;
     };
 
     return (
@@ -189,7 +178,7 @@ const DeviceListWithCommunication = () => {
                                             </button>
                                         </td>
                                     </tr>
-                                    {/* İlgili cihazın verilerini alt satırda göster */}
+                                    {}
                                     
 {/* {JSON.stringify(deviceData)} */}
 {/* {JSON.stringify(device.oidList)} */}

@@ -5,9 +5,9 @@ const DeviceAdd = () => {
     const [deviceName, setDeviceName] = useState("");
     const [ipAddress, setIpAddress] = useState("");
     const [port, setPort] = useState("");
-    const [oidParameterList, setOidParameterList] = useState([]); // OID ve Parameter Name çiftlerini tutar
-    const [currentOid, setCurrentOid] = useState(""); // Mevcut OID girdisi
-    const [currentParameterName, setCurrentParameterName] = useState(""); // Mevcut Parameter Name girdisi
+    const [oidParameterList, setOidParameterList] = useState([]);
+    const [currentOid, setCurrentOid] = useState("");
+    const [currentParameterName, setCurrentParameterName] = useState("");
     const [message, setMessage] = useState("");
 
     const handleAddMapping = () => {
@@ -42,7 +42,7 @@ const DeviceAdd = () => {
                     deviceName,
                     ipAddress,
                     port: parseInt(port),
-                    oidList: oidParameterList, // OID ve Parameter Name çiftlerini gönder
+                    oidList: oidParameterList,
                 }),
             });
 
