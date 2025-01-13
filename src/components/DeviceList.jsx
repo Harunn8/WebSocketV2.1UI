@@ -128,7 +128,7 @@ const DeviceListWithCommunication = () => {
     };
 
     const playNotificationSound = () => {
-        const audio = new Audio("/notification-22-270130.mp3");
+        const audio = new Audio("/mixkit-software-interface-back-2575.mp3");
         audio.play().catch((error) => {
             console.error("Audio playback failed:", error);
         });

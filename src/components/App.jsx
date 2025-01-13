@@ -6,6 +6,7 @@ import DeviceAdd from "./DeviceAdd";
 import DeviceList from "./DeviceList";
 import Devices from "./Devices";
 import SettingsComponent from "./SettingsComponent";
+import TcpDeviceManager from "./TcpCommunicationManager"; // TCP bileşenini dahil ettik
 import { FaCogs } from "react-icons/fa";
 import { CommunicationProvider } from "./CommunicationContext";
 
@@ -17,7 +18,6 @@ const App = () => {
         <CommunicationProvider>
             <Router>
                 <div style={{ display: "flex", height: "100vh" }}>
-                    {}
                     {isLoggedIn && (
                         <nav
                             style={{
@@ -53,7 +53,12 @@ const App = () => {
                                 </li>
                                 <li style={{ marginBottom: "15px" }}>
                                     <Link to="/devices" style={menuLinkStyle}>
-                                        Devices {}
+                                        Devices
+                                    </Link>
+                                </li>
+                                <li style={{ marginBottom: "15px" }}>
+                                    <Link to="/tcp" style={menuLinkStyle}>
+                                        TCP Communication
                                     </Link>
                                 </li>
                                 <li style={{ marginBottom: "15px" }}>
@@ -62,17 +67,16 @@ const App = () => {
                                         Settings
                                     </Link>
                                 </li>
-                                <li style={{ position: "absolute", bottom: 22,width:"60%" }}>
-                                    <div style={{display:"flex",marginLeft: "10px"}}>
-                                    <div style={{flex:1}}>{status}</div>
-                                      <div
-                                        className={`alarm-icon ${status === "Connected" ? "connected" : ""}`}
-                                        style={{
-                                            opacity: isVisible ? 1 : 0,
-                                            
-                                        }}
-                                    /> 
-                                  </div>
+                                <li style={{ position: "absolute", bottom: 22, width: "60%" }}>
+                                    <div style={{ display: "flex", marginLeft: "10px" }}>
+                                        <div style={{ flex: 1 }}>{status}</div>
+                                        <div
+                                            className={`alarm-icon ${status === "Connected" ? "connected" : ""}`}
+                                            style={{
+                                                opacity: isVisible ? 1 : 0,
+                                            }}
+                                        />
+                                    </div>
                                 </li>
                                 <li>
                                     <button
@@ -109,12 +113,45 @@ const App = () => {
                     <div style={{ flex: 1, padding: "20px", marginLeft: isLoggedIn ? "200px" : "0" }}>
                         <Routes>
                             <Route path="/login" element={<Login />} />
-                            <Route path="/snmp" element={isLoggedIn ? <SNMP status={status} setStatus={setStatus} isVisible={isVisible} setIsVisible={setIsVisible} /> : <Navigate to="/login" />} />
-                            <Route path="/add-device" element={isLoggedIn ? <DeviceAdd /> : <Navigate to="/login" />} />
-                            <Route path="/device-list" element={isLoggedIn ? <DeviceList /> : <Navigate to="/login" />} />
-                            <Route path="/devices" element={isLoggedIn ? <Devices /> : <Navigate to="/login" />} />
-                            <Route path="/settings" element={isLoggedIn ? <SettingsComponent /> : <Navigate to="/login" />} />
-                            <Route path="/" element={<Navigate to={isLoggedIn ? "/snmp" : "/login"} />} />
+                            <Route
+                                path="/snmp"
+                                element={
+                                    isLoggedIn ? (
+                                        <SNMP
+                                            status={status}
+                                            setStatus={setStatus}
+                                            isVisible={isVisible}
+                                            setIsVisible={setIsVisible}
+                                        />
+                                    ) : (
+                                        <Navigate to="/login" />
+                                    )
+                                }
+                            />
+                            <Route
+                                path="/add-device"
+                                element={isLoggedIn ? <DeviceAdd /> : <Navigate to="/login" />}
+                            />
+                            <Route
+                                path="/device-list"
+                                element={isLoggedIn ? <DeviceList /> : <Navigate to="/login" />}
+                            />
+                            <Route
+                                path="/devices"
+                                element={isLoggedIn ? <Devices /> : <Navigate to="/login" />}
+                            />
+                            <Route
+                                path="/tcp"
+                                element={isLoggedIn ? <TcpDeviceManager /> : <Navigate to="/login" />}
+                            />
+                            <Route
+                                path="/settings"
+                                element={isLoggedIn ? <SettingsComponent /> : <Navigate to="/login" />}
+                            />
+                            <Route
+                                path="/"
+                                element={<Navigate to={isLoggedIn ? "/snmp" : "/login"} />}
+                            />
                         </Routes>
                     </div>
                 </div>
