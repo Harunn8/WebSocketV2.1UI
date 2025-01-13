@@ -203,7 +203,7 @@ const TcpDeviceManager = () => {
                             <td>
                                 <button onClick={() => updateDevice(device.id)}>Update</button>
                                 <button onClick={() => deleteDevice(device.id)}>Delete</button>
-                                <button onClick={() => startCommunication(device.id)}>Start</button>
+                                <button onClick={() => startCommunication(device.id,device.ipAddress,device.port)}>Start</button>
                                 <button onClick={() => stopCommunication(device.id)}>Stop</button>
                             </td>
                         </tr>

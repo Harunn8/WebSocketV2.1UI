@@ -177,7 +177,7 @@ const DeviceListWithCommunication = () => {
                                                 <FaPlayCircle />
                                             </button>
                                             <button
-                                                onClick={() => stopCommunication(device.id)}
+                                                onClick={() => stopCommunication(device.id,device.ipAddress,device.po)}
                                                 style={{
                                                     background: "none",
                                                     border: "none",
