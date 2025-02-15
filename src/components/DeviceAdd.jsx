@@ -33,7 +33,7 @@ const DeviceAdd = () => {
         }
 
         try {
-            const response = await fetch("http://localhost:5000/api/device/add", {
+            const response = await fetch("http://localhost:5001/api/device/add", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

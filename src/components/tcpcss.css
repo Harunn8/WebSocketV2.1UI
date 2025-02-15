@@ -1,0 +1,17 @@
+.message-box {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    font-weight: bold;
+  }
+  
+  .message-box.success {
+    background-color: green;
+    color: white;
+  }
+  
+  .message-box.error {
+    background-color: red;
+    color: white;
+  }
+  

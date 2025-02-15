@@ -22,7 +22,7 @@ const WebSocketComponent = ({ status, setStatus, isVisible, setIsVisible }) => {
             return;
         }
 
-        const ws = new WebSocket("ws://localhost:5000/ws");
+        const ws = new WebSocket("ws://localhost:5001/ws/snmp");
         setSocket(ws);
 
         ws.onopen = () => {

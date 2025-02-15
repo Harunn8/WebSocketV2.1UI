@@ -11,7 +11,7 @@ const Login = () => {
 
     const handleLogin = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/Login/authenticate", {
+            const response = await fetch("http://localhost:5001/api/Login/authenticate", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"

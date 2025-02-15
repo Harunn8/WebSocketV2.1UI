@@ -9,7 +9,7 @@ const UserManagementComponent = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/User", {
+            const response = await fetch("http://localhost:5001/api/User", {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
@@ -28,8 +28,8 @@ const UserManagementComponent = () => {
     const handleSaveUser = async () => {
         try {
             const url = selectedUser
-                ? `http://localhost:5000/api/User/${selectedUser.id}`
-                : "http://localhost:5000/api/User/add";
+                ? `http://localhost:5001/api/User/${selectedUser.id}`
+                : "http://localhost:5001/api/User/add";
 
             const method = selectedUser ? "PUT" : "POST";
 
@@ -63,7 +63,7 @@ const UserManagementComponent = () => {
 
     const handleDeleteUser = async (id) => {
         try {
-            const response = await fetch(`http://localhost:5000/api/User/${id}`, {
+            const response = await fetch(`http://localhost:5001/api/User/${id}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
