@@ -10,10 +10,11 @@ const TcpDeviceManager = ({ setStatus }) => {
     const [tcpFormat, setTcpFormat] = useState("");
     const [message, setMessage] = useState("");
     const [editingDevice, setEditingDevice] = useState(null);
+    const [receivedData, setReceivedData] = useState([]); // Gelen TCP verilerini saklayan state
 
     // WebSocket bağlantısını başlat
     useEffect(() => {
-        const ws = new WebSocket("ws://localhost:5001/ws/tcp");
+        const ws = new WebSocket("ws://localhost:5000/ws/tcp");
 
         ws.onopen = () => {
             console.log("WebSocket bağlantısı kuruldu.");
@@ -24,7 +25,7 @@ const TcpDeviceManager = ({ setStatus }) => {
             console.log("WebSocket mesajı alındı:", event.data);
             try {
                 const data = JSON.parse(event.data);
-                setMessage(`WebSocket Mesajı: ${data.message || "Mesaj alındı."}`);
+                setReceivedData(prevData => [...prevData, data]); // Gelen veriyi listeye ekle
             } catch (error) {
                 console.error("Mesaj işleme hatası:", error.message);
             }
@@ -53,7 +54,7 @@ const TcpDeviceManager = ({ setStatus }) => {
     // Tüm cihazları getir
     const fetchDevices = async () => {
         try {
-            const response = await fetch("http://localhost:5001/api/TcpDevice/GetAllDevice");
+            const response = await fetch("http://localhost:5000/api/TcpDevice/GetAllDevice");
             if (response.ok) {
                 const data = await response.json();
                 setDevices(data);
@@ -112,8 +113,8 @@ const TcpDeviceManager = ({ setStatus }) => {
 
         try {
             const url = editingDevice
-                ? `http://localhost:5001/api/TcpDevice/UpdateTcpDevice`
-                : `http://localhost:5001/api/TcpDevice/AddTcpDevice`;
+                ? `http://localhost:5000/api/TcpDevice/UpdateTcpDevice`
+                : `http://localhost:5000/api/TcpDevice/AddTcpDevice`;
 
             const method = editingDevice ? "PUT" : "POST";
 
@@ -184,59 +185,54 @@ const TcpDeviceManager = ({ setStatus }) => {
             <h1>TCP Device Manager</h1>
             {message && <p>{message}</p>}
 
-            <div className="form-group">
-                <label>Device Name:</label>
-                <input type="text" value={deviceName} onChange={(e) => setDeviceName(e.target.value)} />
-            </div>
-
-            <div className="form-group">
-                <label>IP Address:</label>
-                <input type="text" value={ipAddress} onChange={(e) => setIpAddress(e.target.value)} />
-            </div>
-
-            <div className="form-group">
-                <label>Port:</label>
-                <input type="number" value={port} onChange={(e) => setPort(e.target.value)} />
-            </div>
-
-            <div className="form-group">
-                <label>TCP Format (comma-separated):</label>
-                <input type="text" value={tcpFormat} onChange={(e) => setTcpFormat(e.target.value)} />
-            </div>
-
-            <button onClick={addOrUpdateDevice}>{editingDevice ? "Update Device" : "Add Device"}</button>
-            {editingDevice && <button onClick={clearForm}>Cancel Edit</button>}
+            <h2>Received Data</h2>
+            <table className="received-data-table">
+                <thead>
+                    <tr>
+                        <th>Device Name</th>
+                        <th>Parameter</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {receivedData.map((data, index) => (
+                        <tr key={index}>
+                            <td>{data.Device}</td>
+                            <td>{data.Data?.map(d => d.ParameterName).join(", ")}</td>
+                            <td>{data.Data?.map(d => d.Value).join(", ")}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
 
             <h2>Devices</h2>
-            <div className="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Device Name</th>
-                            <th>IP Address</th>
-                            <th>Port</th>
-                            <th>TCP Format</th>
-                            <th>Actions</th>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Device Name</th>
+                        <th>IP Address</th>
+                        <th>Port</th>
+                        <th>TCP Format</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {devices.map((device) => (
+                        <tr key={device.id}>
+                            <td>{device.deviceName}</td>
+                            <td>{device.ipAddress}</td>
+                            <td>{device.port}</td>
+                            <td>{device.tcpFormat.join(", ")}</td>
+                            <td>
+                                <button onClick={() => startCommunication(device)}>Start</button>
+                                <button onClick={stopCommunication}>Stop</button>
+                                <button onClick={() => editDevice(device)}>Edit</button>
+                                <button onClick={() => deleteDevice(device.id)}>Delete</button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {devices.map((device) => (
-                            <tr key={device.id}>
-                                <td>{device.deviceName}</td>
-                                <td>{device.ipAddress}</td>
-                                <td>{device.port}</td>
-                                <td>{device.tcpFormat.join(", ")}</td>
-                                <td>
-                                    <button onClick={() => startCommunication(device)}>Start</button>
-                                    <button onClick={stopCommunication}>Stop</button>
-                                    <button onClick={() => editDevice(device)}>Edit</button>
-                                    <button onClick={() => deleteDevice(device.id)}>Delete</button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };
