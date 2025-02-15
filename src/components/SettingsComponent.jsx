@@ -178,7 +178,6 @@ const UserManagementComponent = () => {
                 >
                     <thead>
                         <tr>
-                            <th style={{ border: "1px solid #ddd", padding: "8px" }}>ID</th>
                             <th style={{ border: "1px solid #ddd", padding: "8px" }}>User Name</th>
                             <th style={{ border: "1px solid #ddd", padding: "8px" }}>Actions</th>
                         </tr>
@@ -186,9 +185,6 @@ const UserManagementComponent = () => {
                     <tbody>
                         {users.map((user) => (
                             <tr key={user.id}>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    {user.id}
-                                </td>
                                 <td style={{ border: "1px solid #ddd", padding: "8px" }}>
                                     {user.userName}
                                 </td>
