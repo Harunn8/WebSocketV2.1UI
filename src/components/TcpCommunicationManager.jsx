@@ -4,9 +4,17 @@ import "./tcpcss.css";
 const TcpDeviceManager = ({ setStatus }) => {
     const [socket, setSocket] = useState(null);
     const [devices, setDevices] = useState([]);
-    const [deviceData, setDeviceData] = useState({}); // Gelen verileri saklamak için state
+    const [deviceData, setDeviceData] = useState({});
     const [message, setMessage] = useState("");
-    const [expandedDevice, setExpandedDevice] = useState(null); // Açık olan cihazın ID'sini tutan state
+    const [expandedDevice, setExpandedDevice] = useState(null);
+    const [showAddDeviceForm, setShowAddDeviceForm] = useState(false);
+
+    // Yeni cihaz ekleme form state'leri
+    const [deviceName, setDeviceName] = useState("");
+    const [ipAddress, setIpAddress] = useState("");
+    const [port, setPort] = useState("");
+    const [tcpFormat, setTcpFormat] = useState("");
+    const [tcpData, setTcpData] = useState("");
 
     useEffect(() => {
         const ws = new WebSocket("ws://localhost:5001/ws/tcp");
@@ -87,13 +95,16 @@ const TcpDeviceManager = ({ setStatus }) => {
         setMessage(`${device.deviceName} için haberleşme başlatıldı.`);
     };
 
-    const stopCommunication = () => {
+    const stopCommunication = (device) => {
         if (!socket || socket.readyState !== WebSocket.OPEN) {
             setMessage("WebSocket bağlantısı hazır değil.");
             return;
         }
 
-        const command = { action: "stoptcp", parameters: {ipAddress : device.ipAddress, port: device.port.toString()}};
+        const command = {
+            action: "stoptcp",
+            parameters: { ipAddress: device.ipAddress, port: device.port.toString() },
+        };
 
         socket.send(JSON.stringify(command));
         setMessage("Haberleşme durduruldu.");
@@ -103,10 +114,98 @@ const TcpDeviceManager = ({ setStatus }) => {
         setExpandedDevice(expandedDevice === deviceId ? null : deviceId);
     };
 
+    const addDevice = async () => {
+        if (!deviceName || !ipAddress || !port || !tcpFormat || !tcpData) {
+            setMessage("Lütfen tüm alanları doldurun.");
+            return;
+        }
+
+        try {
+            const formattedTcpData = tcpData.split(",").map(item => {
+                const [request, parameterName] = item.split("-");
+                return { request, parameterName };
+            });
+
+            const response = await fetch("http://localhost:5001/api/TcpDevice/AddTcpDevice", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    deviceName,
+                    ipAddress,
+                    port: parseInt(port, 10),
+                    tcpFormat: tcpFormat.split(","),
+                    tcpData: formattedTcpData,
+                }),
+            });
+
+            if (response.ok) {
+                setMessage("Cihaz başarıyla eklendi.");
+                setShowAddDeviceForm(false);
+                fetchDevices();
+                clearForm();
+            } else {
+                setMessage("Cihaz eklenirken hata oluştu.");
+            }
+        } catch (err) {
+            setMessage("Cihaz eklerken hata oluştu.");
+        }
+    };
+
+    const deleteDevice = async (id) => {
+        try {
+            const response = await fetch(`http://localhost:5001/api/TcpDevice/${id}`, {
+                method: "DELETE",
+            });
+
+            if (response.ok) {
+                setMessage("Cihaz başarıyla silindi.");
+                fetchDevices();
+            } else {
+                setMessage("Cihaz silinirken hata oluştu.");
+            }
+        } catch (err) {
+            setMessage("Cihaz silinirken hata oluştu.");
+        }
+    };
+
+    const clearForm = () => {
+        setDeviceName("");
+        setIpAddress("");
+        setPort("");
+        setTcpFormat("");
+        setTcpData("");
+    };
+
     return (
         <div className="tcp-device-manager">
             <h1>TCP Device Manager</h1>
             {message && <p>{message}</p>}
+
+            <button onClick={() => setShowAddDeviceForm(!showAddDeviceForm)}>
+                {showAddDeviceForm ? "Cancel" : "Add Device"}
+            </button>
+
+            {showAddDeviceForm && (
+                <div className="add-device-form">
+                    <h2>Add New Device</h2>
+                    <label>Device Name:</label>
+                    <input type="text" value={deviceName} onChange={(e) => setDeviceName(e.target.value)} />
+
+                    <label>IP Address:</label>
+                    <input type="text" value={ipAddress} onChange={(e) => setIpAddress(e.target.value)} />
+
+                    <label>Port:</label>
+                    <input type="number" value={port} onChange={(e) => setPort(e.target.value)} />
+
+                    <label>TCP Format:</label>
+                    <input type="text" value={tcpFormat} onChange={(e) => setTcpFormat(e.target.value)} />
+
+                    <label>TCP Data:</label>
+                    <input type="text" value={tcpData} onChange={(e) => setTcpData(e.target.value)} />
+
+                    <button onClick={addDevice}>Save Device</button>
+                </div>
+            )}
 
             <h2>Devices</h2>
             <table>
@@ -127,36 +226,13 @@ const TcpDeviceManager = ({ setStatus }) => {
                                 <td>{device.port}</td>
                                 <td>
                                     <button onClick={() => startCommunication(device)}>Start</button>
-                                    <button onClick={stopCommunication}>Stop</button>
+                                    <button onClick={() => stopCommunication(device)}>Stop</button>
+                                    <button onClick={() => deleteDevice(device.id)}>Delete</button>
                                     <button onClick={() => toggleExpand(device.id)}>
                                         {expandedDevice === device.id ? "Hide Details" : "Show Details"}
                                     </button>
                                 </td>
                             </tr>
-
-                            {expandedDevice === device.id && (
-                                <tr>
-                                    <td colSpan="4">
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <th>Parameter</th>
-                                                    <th>Value</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {deviceData[device.deviceName] &&
-                                                    Object.entries(deviceData[device.deviceName]).map(([param, value], index) => (
-                                                        <tr key={index}>
-                                                            <td>{param}</td>
-                                                            <td>{value}</td>
-                                                        </tr>
-                                                    ))}
-                                            </tbody>
-                                        </table>
-                                    </td>
-                                </tr>
-                            )}
                         </React.Fragment>
                     ))}
                 </tbody>
