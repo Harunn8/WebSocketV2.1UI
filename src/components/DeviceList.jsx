@@ -14,7 +14,7 @@ const DeviceListWithCommunication = () => {
         // Cihaz listesini API'den al
         const fetchDevices = async () => {
             try {
-                const response = await fetch("http://localhost:5001/api/device");
+                const response = await fetch("http://localhost:5001/api/Device");
                 const data = await response.json();
                 setDevices(data);
                 setLoading(false);
@@ -77,13 +77,15 @@ const DeviceListWithCommunication = () => {
     // İletişimi başlat
     const startCommunication = (deviceId, ipAddress, port) => {
         if (webSocket) {
+            const device = devices.find(d => d.id === deviceId);
+            const deviceName = device ? device.deviceName : "Unknown Device";
             const message = {
                 action: "startcommunication",
                 parameters: { deviceId, ipAddress, port: port.toString() },
             };
             console.log("Sending WebSocket message:", JSON.stringify(message));
             webSocket.send(JSON.stringify(message));
-            setMessage({ type: "success", text: `Started communication with ${deviceId}` });
+            setMessage({ type: "success", text: `Started communication with ${deviceName}` });
             setTimeout(() => setMessage(null), 3000);
         } else {
             setMessage({ type: "error", text: "WebSocket is not connected!" });

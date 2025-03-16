@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+//import { ObjectId } from 'bson';
 import "./deviceadd.css";
 
 const DeviceAdd = () => {
@@ -27,39 +28,45 @@ const DeviceAdd = () => {
     };
 
     const handleAddDevice = async () => {
-        if (!deviceName || !ipAddress || !port || oidParameterList.length === 0) {
-            setMessage("Please fill in all fields.");
-            return;
-        }
+    if (!deviceName || !ipAddress || !port || oidParameterList.length === 0) {
+        setMessage("Please fill in all fields.");
+        return;
+    }
 
-        try {
-            const response = await fetch("http://localhost:5001/api/device/add", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    deviceName,
-                    ipAddress,
-                    port: parseInt(port),
-                    oidList: oidParameterList,
-                }),
-            });
-
-            if (response.ok) {
-                setMessage("Device added successfully");
-                setDeviceName("");
-                setIpAddress("");
-                setPort("");
-                setOidParameterList([]);
-            } else {
-                const error = await response.json();
-                setMessage(`Error: ${error.message}`);
-            }
-        } catch (err) {
-            setMessage("Server Error, please try again later");
-        }
+    const requestBody = {
+        //id: new ObjectId().toHexString(),
+        deviceName,
+        ipAddress,
+        port: parseInt(port),
+        oidList: oidParameterList,
     };
+
+    console.log("Request Payload:", JSON.stringify(requestBody, null, 2));
+
+    try {
+        const response = await fetch("http://localhost:5001/api/Device/add", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestBody),
+        });
+
+        if (response.ok) {
+            setMessage("Device added successfully");
+            setDeviceName("");
+            setIpAddress("");
+            setPort("");
+            setOidParameterList([]);
+        } else {
+            const error = await response.json();
+            setMessage(`Error: ${error.message}`);
+        }
+    } catch (err) {
+        setMessage("Server Error, please try again later");
+    }
+};
+
 
     return (
         <div className="device-add-container">
