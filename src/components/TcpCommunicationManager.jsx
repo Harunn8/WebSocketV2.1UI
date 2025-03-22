@@ -28,23 +28,22 @@ const TcpDeviceManager = ({ setStatus }) => {
             console.log("WebSocket mesajı alındı:", event.data);
             try {
                 const data = JSON.parse(event.data);
-                if (data.action === "tcpData") {
-                    const parsedData = parseTcpMessage(data.message, data.deviceId);
+               
 
-                    console.log("Parsed TCP Data:", parsedData); // Debug için
-
-                    setDeviceData(prevData => {
-                        const updatedData = {
-                            ...prevData,
-                            [data.deviceId]: parsedData
-                        };
-                        console.log("Updated Device Data State:", updatedData); // Debug için
-                        return updatedData;
-                    });
+                if (data.Data && data.Id) {
+ console.log("data", data);
+                    setDeviceData(prevData => ({
+                        ...prevData,
+                        [data.Id]: data.Data // "Id" değerini "deviceId" olarak kullanıyoruz.
+                    }));
+                } else {
+                    console.warn("Geçersiz TCP verisi alındı:", data);
                 }
             } catch (error) {
                 console.error("Mesaj işleme hatası:", error.message);
             }
+
+
         };
 
         ws.onclose = () => {
@@ -148,7 +147,7 @@ const TcpDeviceManager = ({ setStatus }) => {
     };
 
     return (
-        <div className="tcp-device-manager">
+        <div className="tcp-device-manager" style={{ }}>
             <h1>TCP Device Manager</h1>
             {message && <p>{message}</p>}
 
@@ -163,6 +162,8 @@ const TcpDeviceManager = ({ setStatus }) => {
                     </tr>
                 </thead>
                 <tbody>
+                    {/* {JSON.stringify(devices,null,2)} */}
+                    {/* {JSON.stringify(deviceData,null,2)} */}
                     {devices.map((device) => (
                         <React.Fragment key={device.id}>
                             <tr>
@@ -178,10 +179,10 @@ const TcpDeviceManager = ({ setStatus }) => {
                                 </td>
                             </tr>
                             {expandedDevice === device.id && (
-                                <tr>
+                                <tr >
                                     <td colSpan="4">
                                         <h3>Device Data</h3>
-                                        <table>
+                                        <table >
                                             <thead>
                                                 <tr>
                                                     <th>Parameter</th>
@@ -189,6 +190,7 @@ const TcpDeviceManager = ({ setStatus }) => {
                                                 </tr>
                                             </thead>
                                             <tbody>
+
                                                 {deviceData[device.id] && Object.keys(deviceData[device.id]).length > 0 ? (
                                                     Object.entries(deviceData[device.id]).map(([param, value]) => (
                                                         <tr key={param}>
@@ -201,6 +203,8 @@ const TcpDeviceManager = ({ setStatus }) => {
                                                         <td colSpan="2">No data received yet</td>
                                                     </tr>
                                                 )}
+
+
                                             </tbody>
                                         </table>
                                     </td>

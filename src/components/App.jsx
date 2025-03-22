@@ -17,7 +17,7 @@ const App = () => {
     return (
         <CommunicationProvider>
             <Router>
-                <div style={{ display: "flex", height: "100vh" }}>
+                <div style={{ display: "flex",   }}>
                     {isLoggedIn && (
                         <nav
                             style={{
@@ -110,7 +110,7 @@ const App = () => {
                     )}
 
                     {/* Sayfa İçeriği */}
-                    <div style={{ flex: 1, padding: "20px", marginLeft: isLoggedIn ? "200px" : "0" }}>
+                    <div style={{ flex: 1, padding: "20px", marginBottom:20, marginLeft: isLoggedIn ? "200px" : "0", height:"100%" }}>
                         <Routes>
                             <Route path="/login" element={<Login />} />
                             <Route
