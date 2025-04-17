@@ -10,6 +10,7 @@ import TcpDeviceManager from "./TcpCommunicationManager"; // TCP bileşenini dah
 import { FaCogs } from "react-icons/fa";
 import { CommunicationProvider } from "./CommunicationContext";
 
+
 const App = () => {
     const isLoggedIn = !!localStorage.getItem("token");
     const [status, setStatus] = useState("Disconnected");

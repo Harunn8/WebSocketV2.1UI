@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { FaPlayCircle, FaRegStopCircle } from "react-icons/fa";
 import "./deviceList.css";
+import NotificationHandler from "./NotificationHandler";
+
 
 const DeviceListWithCommunication = () => {
     const [devices, setDevices] = useState([]);
@@ -30,11 +32,13 @@ const DeviceListWithCommunication = () => {
         const ws = new WebSocket("ws://localhost:5001/ws/snmp");
         ws.onopen = () => {
             console.log("WebSocket connected");
+            
             setIsConnected(true);
         };
 
         ws.onmessage = (event) => {
             console.log("Message received:", event.data);
+            console.log("Message received event:", event);
             try {
                 const parsedData = parseSnmpMessage(event.data); // Mesajı ayrıştır
 
@@ -136,6 +140,8 @@ const DeviceListWithCommunication = () => {
     };
 
     return (
+
+        
         <div className="device-list-page">
             {message && (
                 <div className={`message-box ${message.type}`}>
@@ -255,6 +261,7 @@ const DeviceListWithCommunication = () => {
                 )}
             </div>
         </div>
+        
     );
 };
 
