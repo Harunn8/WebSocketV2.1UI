@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaPlayCircle, FaRegStopCircle } from "react-icons/fa";
 import "./deviceList.css";
 import NotificationHandler from "./NotificationHandler";
-
+import toast from "react-hot-toast";
 
 const DeviceListWithCommunication = () => {
     const [devices, setDevices] = useState([]);
@@ -20,6 +20,7 @@ const DeviceListWithCommunication = () => {
                 const data = await response.json();
                 setDevices(data);
                 setLoading(false);
+                toast.error("test")
             } catch (err) {
                 console.error("Error fetching devices:", err);
                 setLoading(false);

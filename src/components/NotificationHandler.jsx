@@ -30,6 +30,7 @@ const NotificationHandler = () => {
         client.on("connect", () => {
             console.log("MQTT Connected");
             client.subscribe("alarm/notify");
+            toast.success("test")
         });
 
         client.on("message", (topic, message) => {
@@ -43,20 +44,21 @@ const NotificationHandler = () => {
                 console.log(AlarmDescription);
                 
                 
-                toast(
-                    <div>
-                        <strong>{title}: {AlarmName}</strong>
-                        <div>{AlarmDescription}</div>
-                    </div>,
-                    {
-                        position: "bottom-right",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        pauseOnHover: true,
-                        closeOnClick: true,
-                        style: {background},
-                    }
-                );
+                // toast(
+                //     <div>
+                //         <strong>{title}: {AlarmName}</strong>
+                //         <div>{AlarmDescription}</div>
+                //     </div>,
+                //     {
+                //         position: "bottom-right",
+                //         autoClose: 5000,
+                //         hideProgressBar: false,
+                //         pauseOnHover: true,
+                //         closeOnClick: true,
+                //         style: {background},
+                //     }
+                // );
+           
             }
             catch(err)
             {
