@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { FaPlayCircle, FaRegStopCircle } from "react-icons/fa";
+import { FaPlayCircle, FaRegStopCircle, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import "./deviceList.css";
-import NotificationHandler from "./NotificationHandler";
-import toast from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const DeviceListWithCommunication = () => {
     const [devices, setDevices] = useState([]);
@@ -11,16 +11,16 @@ const DeviceListWithCommunication = () => {
     const [isConnected, setIsConnected] = useState(false);
     const [message, setMessage] = useState(null);
     const [deviceData, setDeviceData] = useState({});
+    const [openDeviceId, setOpenDeviceId] = useState(null);
+    const [activeDevices, setActiveDevices] = useState(new Set());
 
     useEffect(() => {
-        // Cihaz listesini API'den al
         const fetchDevices = async () => {
             try {
                 const response = await fetch("http://localhost:5001/api/Device");
                 const data = await response.json();
                 setDevices(data);
                 setLoading(false);
-                toast.error("test")
             } catch (err) {
                 console.error("Error fetching devices:", err);
                 setLoading(false);
@@ -29,57 +29,56 @@ const DeviceListWithCommunication = () => {
 
         fetchDevices();
 
-        // WebSocket bağlantısını başlat
         const ws = new WebSocket("ws://localhost:5001/ws/snmp");
         ws.onopen = () => {
             console.log("WebSocket connected");
-            
             setIsConnected(true);
         };
 
         ws.onmessage = (event) => {
-            console.log("Message received:", event.data);
-            console.log("Message received event:", event);
+            const message = event.data;
             try {
-                const parsedData = parseSnmpMessage(event.data); // Mesajı ayrıştır
-
-                // Eğer genel bir mesajsa, kullanıcıya göster ve işleme
-                if (!parsedData) {
-                    setMessage({ type: "info", text: event.data });
-                    setTimeout(() => setMessage(null), 3000);
-                    return;
+                if (message.includes("/")) {
+                    const parts = message.split("/");
+                    if (parts.length === 3) {
+                        const deviceName = parts[0]?.trim();
+                        const alarmName = parts[1]?.trim();
+                        const severity = parseInt(parts[2]?.trim()) || 1;
+                        const { background, title } = getSeverityStyle(severity);
+                        toast.success(`${title}: ${alarmName} - Device: ${deviceName}`, {
+                            position: "bottom-right",
+                            autoClose: 5000,
+                            hideProgressBar: false,
+                            pauseOnHover: true,
+                            closeOnClick: true,
+                            style: { background },
+                        });
+                        return;
+                    }
                 }
 
-                const { oid, value } = parsedData;
+                const parsedData = parseSnmpMessage(message);
+                if (!parsedData) return;
 
-                // Veriyi OID'ye göre güncelle
+                const { oid, value } = parsedData;
                 setDeviceData((prevData) => ({
                     ...prevData,
-                    [oid]: value, // OID ile ilişkilendir
+                    [oid]: value,
                 }));
+
             } catch (error) {
-                console.error("Invalid message format:", event.data, "Error:", error.message);
+                console.error("Invalid message format:", message, "Error:", error.message);
             }
         };
 
-        ws.onclose = () => {
-            console.log("WebSocket disconnected");
-            setIsConnected(false);
-        };
-
-        ws.onerror = (error) => {
-            console.error("WebSocket error:", error);
-        };
+        ws.onclose = () => setIsConnected(false);
+        ws.onerror = (error) => console.error("WebSocket error:", error);
 
         setWebSocket(ws);
 
-        // Bileşen unmount olduğunda WebSocket'i kapat
-        return () => {
-            if (ws) ws.close();
-        };
+        return () => { if (ws) ws.close(); };
     }, []);
 
-    // İletişimi başlat
     const startCommunication = (deviceId, ipAddress, port) => {
         if (webSocket) {
             const device = devices.find(d => d.id === deviceId);
@@ -88,181 +87,170 @@ const DeviceListWithCommunication = () => {
                 action: "startcommunication",
                 parameters: { deviceId, ipAddress, port: port.toString() },
             };
-            console.log("Sending WebSocket message:", JSON.stringify(message));
             webSocket.send(JSON.stringify(message));
-            setMessage({ type: "success", text: `Started communication with ${deviceName}` });
-            setTimeout(() => setMessage(null), 3000);
-        } else {
-            setMessage({ type: "error", text: "WebSocket is not connected!" });
-            setTimeout(() => setMessage(null), 3000);
+            toast.success(`Started communication with ${deviceName}`);
+            setActiveDevices(prev => new Set(prev).add(deviceId));
         }
     };
 
-    // İletişimi durdur
     const stopCommunication = (deviceId) => {
         if (webSocket) {
             const message = { action: "stopcommunication", parameters: { deviceId } };
-            console.log("Sending stop command:", JSON.stringify(message));
             webSocket.send(JSON.stringify(message));
-            setMessage({ type: "success", text: `Stopped communication with ${deviceId}` });
-            setTimeout(() => setMessage(null), 3000);
-        } else {
-            setMessage({ type: "error", text: "WebSocket is not connected!" });
-            setTimeout(() => setMessage(null), 3000);
+            const device = devices.find(d => d.id === deviceId);
+            const deviceName1 = device ? device.deviceName : "Unknown Device";
+            toast.success(`Stopped communication with device ${deviceName1}`);
+            setActiveDevices(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(deviceId);
+                return newSet;
+            });
         }
     };
 
-    // Gelen mesajları ayrıştır
     const parseSnmpMessage = (message) => {
-        // Eğer mesaj genel bir "Communication stopped" mesajıysa, işleme
-        if (message.includes("Communication stopped")) {
-            return null; // Genel mesajları işleme
-        }
-
-        // OID ve Value ayrıştırması
+        if (message.includes("Communication stopped")) return null;
         if (message.startsWith("OID")) {
             const parts = message.split(":");
-            const oid = parts[0]?.replace("OID", "").trim(); // "OID" kısmını çıkar
-            const value = parts[1]?.trim(); // Değer kısmını al
-            if (!oid || value === undefined) {
-                throw new Error("Invalid message format");
-            }
+            const oid = parts[0]?.replace("OID", "").trim();
+            const value = parts[1]?.trim();
+            if (!oid || value === undefined) throw new Error("Invalid message format");
             return { oid, value };
         }
-
         throw new Error("Invalid message format");
     };
+
     const removeLeadingDot = (inputString) => {
-        // Eğer string . ile başlıyorsa ilk karakteri kaldır
         if (inputString.startsWith(".")) {
             return inputString.substring(1);
         }
-        return inputString; // Değilse olduğu gibi döndür
+        return inputString;
+    };
+
+    const getSeverityStyle = (severity) => {
+        switch (severity) {
+            case 1: return { background: "#c8e6c9", title: "Warning" };
+            case 2: return { background: "#81c784", title: "Low" };
+            case 3: return { background: "#fff176", title: "Medium" };
+            case 4: return { background: "#ffb74d", title: "High" };
+            case 5: return { background: "#e57373", title: "Critical" };
+            default: return { background: "#eeeeee", title: "Info" };
+        }
+    };
+
+    const toggleDetails = (deviceId) => {
+        if (openDeviceId === deviceId) {
+            setOpenDeviceId(null);
+        } else {
+            setOpenDeviceId(deviceId);
+        }
     };
 
     return (
+        <>
+            <ToastContainer />
+            <div className="device-list-page">
+                <div className="device-list-container">
+                    <h2>Device List with Communication</h2>
+                    {loading ? (
+                        <p>Loading...</p>
+                    ) : (
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Device Name</th>
+                                    <th>IP Address</th>
+                                    <th>Port</th>
+                                    <th>Detail</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {devices.map((device) => (
+                                    <React.Fragment key={device.id}>
+                                        <tr style={{
+                                            backgroundColor: activeDevices.has(device.id) ? "#2e7d32" : "transparent",
+                                            color: activeDevices.has(device.id) ? "white" : "inherit",
+                                            transition: "background-color 0.3s ease"
+                                        }}>
+                                            <td>{device.deviceName}</td>
+                                            <td>{device.ipAddress}</td>
+                                            <td>{device.port}</td>
+                                            <td style={{ textAlign: "center" }}>
+                                                <button
+                                                    onClick={() => toggleDetails(device.id)}
+                                                    style={{
+                                                        background: "none",
+                                                        border: "none",
+                                                        cursor: "pointer",
+                                                        fontSize: "20px",
+                                                        color: "#2196f3",
+                                                    }}
+                                                >
+                                                    {openDeviceId === device.id ? <FaChevronUp /> : <FaChevronDown />}
+                                                </button>
+                                            </td>
+                                        </tr>
 
-        
-        <div className="device-list-page">
-            {message && (
-                <div className={`message-box ${message.type}`}>
-                    {message.type === "success" ? "✔️" : "❌"} {message.text}
+                                        {openDeviceId === device.id && (
+                                            <tr>
+                                                <td colSpan="4">
+                                                    <div style={{
+                                                        margin: "10px 0",
+                                                        padding: "15px",
+                                                        background: "#333",
+                                                        borderRadius: "8px",
+                                                        boxShadow: "0 4px 8px rgba(0,0,0,0.5)",
+                                                        animation: "fadeIn 0.5s ease-in-out"
+                                                    }}>
+                                                        <div style={{
+                                                            marginBottom: "10px",
+                                                            display: "flex",
+                                                            gap: "10px",
+                                                            justifyContent: "center"
+                                                        }}>
+                                                            <button onClick={() => startCommunication(device.id, device.ipAddress, device.port)} style={{ fontSize: "20px", color: "#4caf50" }}>
+                                                                <FaPlayCircle />
+                                                            </button>
+                                                            <button onClick={() => stopCommunication(device.id)} style={{ fontSize: "20px", color: "#f44336" }}>
+                                                                <FaRegStopCircle />
+                                                            </button>
+                                                        </div>
+                                                        <table style={{ width: "100%" }}>
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>OID</th>
+                                                                    <th>Value</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {device.oidList.map((item, index) => (
+                                                                    <tr key={index}>
+                                                                        <td>{item.parameterName}</td>
+                                                                        <td>{deviceData[removeLeadingDot(item.oid)] || "-"}</td>
+                                                                    </tr>
+                                                                ))}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
-            )}
-
-            <div className="device-list-container">
-                <h2>Device List with Communication</h2>
-                {loading ? (
-                    <p>Loading...</p>
-                ) : (
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Device Name</th>
-                                <th>IP Address</th>
-                                <th>Port</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {devices.map((device) => (
-                                <React.Fragment key={device.id}>
-                                    <tr>
-                                        <td>{device.deviceName}</td>
-                                        <td>{device.ipAddress}</td>
-                                        <td>{device.port}</td>
-                                        <td style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
-                                            <button
-                                                onClick={() => startCommunication(device.id, device.ipAddress, device.port)}
-                                                style={{
-                                                    background: "none",
-                                                    border: "none",
-                                                    cursor: "pointer",
-                                                    fontSize: "20px",
-                                                    color: "#4caf50",
-                                                }}
-                                            >
-                                                <FaPlayCircle />
-                                            </button>
-                                            <button
-                                                onClick={() => stopCommunication(device.id)}
-                                                style={{
-                                                    background: "none",
-                                                    border: "none",
-                                                    cursor: "pointer",
-                                                    fontSize: "20px",
-                                                    color: "#f44336",
-                                                }}
-                                            >
-                                                <FaRegStopCircle />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    {/* İlgili cihazın verilerini alt satırda göster */}
-                                    
-{/* {JSON.stringify(deviceData)} */}
-{/* {JSON.stringify(device.oidList)} */}
-<tr>
-                                            <td colSpan="4">
-                                                <table>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>OID</th>
-                                                            <th>Value</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    {device.oidList.map((item,index)=>{
-                                                        return (
-                                                            <tr key={index}> 
-                                                            <td>{item.parameterName}</td>
-                                                            <td>{deviceData[removeLeadingDot(item.oid)]}</td>
-                                                        </tr>
-                                                        )
-                                                            
-                                    })}
-
-
-                                                        {/* {Object.entries(deviceData).map(([oid, value]) => (
-                                                            <tr key={oid}>
-                                                                <td>{oid}</td>
-                                                                <td>{value}</td>
-                                                            </tr>
-                                                        ))} */}
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    {/* {Object.keys(deviceData).length > 0 && (
-                                        <tr>
-                                            <td colSpan="4">
-                                                <table>
-                                                    <thead>
-                                                        <tr>
-                                                            <th>OID</th>
-                                                            <th>Value</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {Object.entries(deviceData).map(([oid, value]) => (
-                                                            <tr key={oid}>
-                                                                <td>{oid}</td>
-                                                                <td>{value}</td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    )} */}
-                                </React.Fragment>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
             </div>
-        </div>
-        
+
+            {/* Animasyon CSS */}
+            <style>{`
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: scale(0.95); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+            `}</style>
+        </>
     );
 };
 
