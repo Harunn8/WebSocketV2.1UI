@@ -25,7 +25,7 @@
 
 // const NotificationHandler = () => {
 //     useEffect(() => {
-//         const client = mqtt.connect("ws://localhost:5001/ws/snmp");
+//         const client = mqtt.connect("ws://localhost:5002/ws/snmp");
 
 //         client.on("connect", () => {
 //             console.log("MQTT Connected");
@@ -102,7 +102,7 @@ const getSeverityStyle = (severity) => {
 
 const NotificationHandler = () => {
     useEffect(() => {
-        const client = mqtt.connect("ws://localhost:5001/ws/snmp");
+        const client = mqtt.connect("ws://10.0.20.33:5002/ws/snmp");
         const topic = "alarm/notify";
         client.on("connect", () => {
             console.log("MQTT Connected");

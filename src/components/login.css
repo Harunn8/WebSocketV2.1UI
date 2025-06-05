@@ -5,7 +5,7 @@
     padding:80px;
     border: 1px solid #ccc;
     border-radius: 10px;
-    margin-left: 650px;
+    margin-left: 720px;
     /* background-image:url("bg.jpg"); */
     background-color: whitesmoke;
 }
@@ -34,8 +34,8 @@
 
 .login-title{
     color: black;
-    margin-left: -30px;
-    padding: 60px;
+    margin-left: -20px;
+    padding: 50px;
     background-image: url("ssd.jpg");
-    width: 280px;
+    width: 290px;
 }

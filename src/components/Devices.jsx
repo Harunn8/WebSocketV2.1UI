@@ -6,7 +6,7 @@ const Devices = () => {
     const [webSocket, setWebSocket] = useState(null);
 
     useEffect(() => {
-        const ws = new WebSocket("ws://localhost:5001/ws");
+        const ws = new WebSocket("ws://10.0.20.33:2148/ws");
 
         ws.onopen = () => {
             console.log("WebSocket connected");

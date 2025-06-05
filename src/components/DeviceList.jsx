@@ -11,7 +11,7 @@ const DeviceListWithCommunication = () => {
     const [isConnected, setIsConnected] = useState(false);
     const [message, setMessage] = useState(null);
     const [deviceData, setDeviceData] = useState({});
-    const [openDeviceId, setOpenDeviceId] = useState(null);
+    const [openDeviceIds, setOpenDeviceIds] = useState(new Set());
     const [activeDevices, setActiveDevices] = useState(new Set());
 
     useEffect(() => {
@@ -139,11 +139,15 @@ const DeviceListWithCommunication = () => {
     };
 
     const toggleDetails = (deviceId) => {
-        if (openDeviceId === deviceId) {
-            setOpenDeviceId(null);
-        } else {
-            setOpenDeviceId(deviceId);
-        }
+        setOpenDeviceIds((prev) => {
+            const updated = new Set(prev);
+            if (updated.has(deviceId)) {
+                updated.delete(deviceId);
+            } else {
+                updated.add(deviceId);
+            }
+            return updated;
+        });
     };
 
     return (
@@ -186,12 +190,12 @@ const DeviceListWithCommunication = () => {
                                                         color: "#2196f3",
                                                     }}
                                                 >
-                                                    {openDeviceId === device.id ? <FaChevronUp /> : <FaChevronDown />}
+                                                    {openDeviceIds.has(device.id) ? <FaChevronUp /> : <FaChevronDown />}
                                                 </button>
                                             </td>
                                         </tr>
 
-                                        {openDeviceId === device.id && (
+                                        {openDeviceIds.has(device.id) && (
                                             <tr>
                                                 <td colSpan="4">
                                                     <div style={{
@@ -243,7 +247,6 @@ const DeviceListWithCommunication = () => {
                 </div>
             </div>
 
-            {/* Animasyon CSS */}
             <style>{`
                 @keyframes fadeIn {
                     from { opacity: 0; transform: scale(0.95); }
