@@ -9,9 +9,8 @@ const DeviceListWithCommunication = () => {
     const [loading, setLoading] = useState(true);
     const [webSocket, setWebSocket] = useState(null);
     const [isConnected, setIsConnected] = useState(false);
-    const [message, setMessage] = useState(null);
     const [deviceData, setDeviceData] = useState({});
-    const [openDeviceId, setOpenDeviceId] = useState(null);
+    const [openDeviceIds, setOpenDeviceIds] = useState(new Set());
     const [activeDevices, setActiveDevices] = useState(new Set());
 
     useEffect(() => {
@@ -45,14 +44,20 @@ const DeviceListWithCommunication = () => {
                         const alarmName = parts[1]?.trim();
                         const severity = parseInt(parts[2]?.trim()) || 1;
                         const { background, title } = getSeverityStyle(severity);
-                        toast.success(`${title}: ${alarmName} - Device: ${deviceName}`, {
-                            position: "bottom-right",
-                            autoClose: 5000,
-                            hideProgressBar: false,
-                            pauseOnHover: true,
-                            closeOnClick: true,
-                            style: { background },
-                        });
+                        toast(
+                            <div>
+                                <strong>{title}: {alarmName}</strong>
+                                <div>Device: {deviceName}</div>
+                            </div>,
+                            {
+                                position: "bottom-right",
+                                autoClose: 5000,
+                                hideProgressBar: false,
+                                pauseOnHover: true,
+                                closeOnClick: true,
+                                style: { background },
+                            }
+                        );
                         return;
                     }
                 }
@@ -99,13 +104,25 @@ const DeviceListWithCommunication = () => {
             webSocket.send(JSON.stringify(message));
             const device = devices.find(d => d.id === deviceId);
             const deviceName1 = device ? device.deviceName : "Unknown Device";
-            toast.success(`Stopped communication with device ${deviceName1}`);
+            toast.success(`Stopped communication with ${deviceName1}`);
             setActiveDevices(prev => {
                 const newSet = new Set(prev);
                 newSet.delete(deviceId);
                 return newSet;
             });
         }
+    };
+
+    const toggleDetails = (deviceId) => {
+        setOpenDeviceIds(prev => {
+            const updated = new Set(prev);
+            if (updated.has(deviceId)) {
+                updated.delete(deviceId);
+            } else {
+                updated.add(deviceId);
+            }
+            return updated;
+        });
     };
 
     const parseSnmpMessage = (message) => {
@@ -121,10 +138,7 @@ const DeviceListWithCommunication = () => {
     };
 
     const removeLeadingDot = (inputString) => {
-        if (inputString.startsWith(".")) {
-            return inputString.substring(1);
-        }
-        return inputString;
+        return inputString.startsWith(".") ? inputString.substring(1) : inputString;
     };
 
     const getSeverityStyle = (severity) => {
@@ -135,14 +149,6 @@ const DeviceListWithCommunication = () => {
             case 4: return { background: "#ffb74d", title: "High" };
             case 5: return { background: "#e57373", title: "Critical" };
             default: return { background: "#eeeeee", title: "Info" };
-        }
-    };
-
-    const toggleDetails = (deviceId) => {
-        if (openDeviceId === deviceId) {
-            setOpenDeviceId(null);
-        } else {
-            setOpenDeviceId(deviceId);
         }
     };
 
@@ -186,12 +192,12 @@ const DeviceListWithCommunication = () => {
                                                         color: "#2196f3",
                                                     }}
                                                 >
-                                                    {openDeviceId === device.id ? <FaChevronUp /> : <FaChevronDown />}
+                                                    {openDeviceIds.has(device.id) ? <FaChevronUp /> : <FaChevronDown />}
                                                 </button>
                                             </td>
                                         </tr>
 
-                                        {openDeviceId === device.id && (
+                                        {openDeviceIds.has(device.id) && (
                                             <tr>
                                                 <td colSpan="4">
                                                     <div style={{
@@ -243,7 +249,6 @@ const DeviceListWithCommunication = () => {
                 </div>
             </div>
 
-            {/* Animasyon CSS */}
             <style>{`
                 @keyframes fadeIn {
                     from { opacity: 0; transform: scale(0.95); }
