@@ -44,7 +44,7 @@ const DeviceAdd = () => {
     console.log("Request Payload:", JSON.stringify(requestBody, null, 2));
 
     try {
-        const response = await fetch("http://localhost:5001/api/Device/add", {
+        const response = await fetch("http://10.0.20.33:9000/api/Device/add", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

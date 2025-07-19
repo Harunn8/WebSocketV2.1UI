@@ -1,177 +1,76 @@
 import React, { useState, useEffect } from "react";
-import "./snmp.css";
+import "./dashboard.css";
 
-const WebSocketComponent = ({ status, setStatus, isVisible, setIsVisible }) => {
-    const [socket, setSocket] = useState(null);
-    const [ipAddress, setIpAddress] = useState("");
-    const [data, setData] = useState({});
-    const [isTableVisible, setIsTableVisible] = useState(true);
-    const [showNotification, setShowNotification] = useState(false);
-
-    const playNotificationSound = () => {
-        const audio = new Audio("/notification-22-270130.mp3");
-        audio.play().catch((error) => {
-            console.error("Audio playback failed:", error);
-        });
-    };
+const Dashboard = () => {
+    const [devices, setDevices] = useState([]);
+    const [alarms, setAlarms] = useState([]);
+    const [lastLogin, setLastLogin] = useState("2025-05-24 15:30");
+    const [lastLogout, setLastLogout] = useState("2025-05-24 16:45");
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            window.location.href = "/login";
-            return;
-        }
-
-        const ws = new WebSocket("ws://localhost:5001/ws/snmp");
-        setSocket(ws);
-
-        ws.onopen = () => {
-            console.log("WebSocket was connect");
-            setStatus("Connected");
-            playNotificationSound();
-        };
-
-        ws.onmessage = (event) => {
-            try {
-                const parsedData = parseSnmpMessage(event.data);
-                const { oid, value } = parsedData;
-
-                setData((prevData) => ({
-                    ...prevData,
-                    [oid]: value,
-                }));
-            } catch (error) {
-                console.error("Wrong Message:", event.data, "Error:", error.message);
-            }
-        };
-
-        ws.onclose = () => {
-            console.log("WebSocket connection was close");
-            setStatus("Disconnected");
-            setShowNotification(true);
-            playNotificationSound();
-        };
-
-        return () => ws.close();
+        fetchDevices();
+        fetchAlarms();
     }, []);
 
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setIsVisible((prev) => !prev);
-        }, 500);
-
-        return () => clearInterval(interval);
-    }, []);
-
-    const startCommunication = () => {
-        if (!ipAddress) {
-            alert("Please enter a valid IP address.");
-            return;
-        }
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            const command = {
-                action: "startCommunication",
-                parameters: {
-                    ipAddress: ipAddress,
-                },
-            };
-            socket.send(JSON.stringify(command));
-            setIsTableVisible(true);
-        } else {
-            alert("WebSocket connection establish is not yet");
+    const fetchDevices = async () => {
+        try {
+            const response = await fetch("http://localhost:5001/api/Device");
+            const json = await response.json();
+            setDevices(json);
+        } catch (err) {
+            console.error("Device fetch error", err);
         }
     };
 
-    const stopCommunication = () => {
-        if (socket) {
-            const command = { action: "stopCommunication" };
-            socket.send(JSON.stringify(command));
-            setIsTableVisible(false);
+    const fetchAlarms = async () => {
+        try {
+            const response = await fetch("http://localhost:5001/api/Alarm/GetlAllAlarms");
+            const json = await response.json();
+            setAlarms(json);
+        } catch (err) {
+            console.error("Alarm fetch error", err);
         }
     };
 
-    const clearData = () => {
-        setData({});
-    };
-
-    const parseSnmpMessage = (message) => {
-        if (!message.startsWith("OID")) {
-            throw new Error("Invalid message format");
-        }
-
-        const dataPart = message.substring(4).trim();
-        const [oid, valuePart] = dataPart.split(":");
-
-        if (!oid || !valuePart) {
-            throw new Error("Message format is incorrect");
-        }
-
-        const value = parseFloat(valuePart.replace(",", "."));
-
-        if (isNaN(value)) {
-            throw new Error("Value is not a valid number");
-        }
-
-        return { oid: oid.trim(), value };
-    };
-    
     return (
-        <div className="snmpcommunication">
-            <h2 className="snmp-title">SNMP Communication</h2>
-            <p>Status: {status}</p>
-            <div className="snmp-content">
-                <label>IP Address:</label>
-                <input
-                    className="enterIpAddress"
-                    type="text"
-                    value={ipAddress}
-                    onChange={(e) => setIpAddress(e.target.value)}
-                    placeholder="Enter IP address"
-                />
-                <button className="startbutton" onClick={startCommunication}>Start Communication</button>
-                <button className="stopbutton" onClick={stopCommunication}>Stop Communication</button>
-                <div className="snmp-data">
-                    {isTableVisible ? (
-                        <>
-                            <h4>Gelen SNMP Verileri:</h4>
-                            {Object.keys(data).length === 0 ? (
-                                <p>No Data</p>
-                            ) : (
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>OID</th>
-                                            <th>Value</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {Object.entries(data).map(([oid, value], index) => (
-                                            <tr key={index}>
-                                                <td>{oid}</td>
-                                                <td>{value}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            )}
-                        </>
+        <div className="dashboard-container">
+            <h1 className="title">Monitoring Dashboard</h1>
+
+            <div className="section-grid">
+                <div className="box">
+                    <h2>🖥️ Devices</h2>
+                    {devices.length === 0 ? (
+                        <p>No devices found.</p>
                     ) : (
-                        <p className="connection-down" style={{ color: "red" }}>
-                            CONNECTION DOWN
-                        </p>
+                        <ul>
+                            {devices.map((d) => (
+                                <li key={d.id}><b>{d.deviceName}</b> - {d.ipAddress}:{d.port}</li>
+                            ))}
+                        </ul>
                     )}
                 </div>
-                <button className="clear-button" onClick={clearData}>
-                    Clear
-                </button>
-            </div>
 
-            {showNotification && (
-                <div className="notification">
+                <div className="box">
+                    <h2>🚨 Active Alarms</h2>
+                    {alarms.length === 0 ? (
+                        <p>No active alarms.</p>
+                    ) : (
+                        <ul>
+                            {alarms.slice(0, 5).map((a, i) => (
+                                <li key={i}>🔴 {a.alarmName} (Device: {a.deviceId})</li>
+                            ))}
+                        </ul>
+                    )}
                 </div>
-            )}
+
+                <div className="box">
+                    <h2>🕒 Login Info</h2>
+                    <p><strong>Last Login:</strong> {lastLogin}</p>
+                    <p><strong>Last Logout:</strong> {lastLogout}</p>
+                </div>
+            </div>
         </div>
     );
 };
 
-export default WebSocketComponent;
+export default Dashboard;

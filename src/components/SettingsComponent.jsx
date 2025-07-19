@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import "./user-management.css";
 
 const UserManagementComponent = () => {
     const [users, setUsers] = useState([]);
@@ -28,8 +29,8 @@ const UserManagementComponent = () => {
     const handleSaveUser = async () => {
         try {
             const url = selectedUser
-                ? `http://localhost:5001/api/User/${selectedUser.id}`
-                : "http://localhost:5001/api/User/add";
+                ? `http://10.0.20.33:9000/api/User/${selectedUser.id}`
+                : "http://10.0.20.33:9000/api/User/add";
 
             const method = selectedUser ? "PUT" : "POST";
 
@@ -42,13 +43,16 @@ const UserManagementComponent = () => {
                 body: JSON.stringify({
                     userName,
                     password: !selectedUser ? password : undefined,
+                    permissions: {
+                        view: selectedUser?.permissions?.view || false,
+                        control: selectedUser?.permissions?.control || false,
+                        delete: selectedUser?.permissions?.delete || false,
+                    },
                 }),
             });
 
             if (response.ok) {
-                setMessage(
-                    selectedUser ? "User updated successfully." : "User added successfully."
-                );
+                setMessage(selectedUser ? "User updated successfully." : "User added successfully.");
                 setUserName("");
                 setPassword("");
                 setSelectedUser(null);
@@ -63,7 +67,7 @@ const UserManagementComponent = () => {
 
     const handleDeleteUser = async (id) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/User/${id}`, {
+            const response = await fetch(`http://10.0.20.33:9000/api/User/${id}`, {
                 method: "DELETE",
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -90,14 +94,23 @@ const UserManagementComponent = () => {
         fetchUsers();
     }, []);
 
+    const handlePermissionChange = (permissionKey) => {
+        setSelectedUser((prev) => ({
+            ...prev,
+            permissions: {
+                ...prev.permissions,
+                [permissionKey]: !prev.permissions?.[permissionKey],
+            },
+        }));
+    };
+
     return (
-        <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
+        <div className="user-management">
             <h2>User Management</h2>
 
-            {message && <p style={{ color: "red", marginTop: "10px" }}>{message}</p>}
+            {message && <p className="message">{message}</p>}
 
-            { }
-            <div style={{ marginBottom: "20px" }}>
+            <div className="form-section">
                 <h3>{selectedUser ? "Update User" : "Add User"}</h3>
                 <label>User Name</label>
                 <input
@@ -105,13 +118,6 @@ const UserManagementComponent = () => {
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
                     placeholder="Enter user name"
-                    style={{
-                        width: "100%",
-                        padding: "10px",
-                        margin: "5px 0",
-                        borderRadius: "5px",
-                        border: "1px solid #ccc",
-                    }}
                 />
                 {!selectedUser && (
                     <>
@@ -121,101 +127,66 @@ const UserManagementComponent = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Enter password"
-                            style={{
-                                width: "100%",
-                                padding: "10px",
-                                margin: "5px 0",
-                                borderRadius: "5px",
-                                border: "1px solid #ccc",
-                            }}
                         />
                     </>
                 )}
-                <button
-                    onClick={handleSaveUser}
-                    style={{
-                        padding: "10px 20px",
-                        background: "#4caf50",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                        marginTop: "10px",
-                    }}
-                >
-                    {selectedUser ? "Update User" : "Add User"}
-                </button>
+
                 {selectedUser && (
-                    <button
-                        onClick={() => {
-                            setSelectedUser(null);
-                            setUserName("");
-                        }}
-                        style={{
-                            padding: "10px 20px",
-                            background: "#f44336",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "5px",
-                            cursor: "pointer",
-                            marginLeft: "10px",
-                        }}
-                    >
-                        Cancel
-                    </button>
+                    <div className="permissions">
+                        <label>Permissions:</label>
+                        {["view", "control", "delete"].map((perm) => (
+                            <label key={perm} className="permission-checkbox">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedUser.permissions?.[perm] || false}
+                                    onChange={() => handlePermissionChange(perm)}
+                                />
+                                {perm.charAt(0).toUpperCase() + perm.slice(1)}
+                            </label>
+                        ))}
+                    </div>
                 )}
+
+                <div className="button-row">
+                    <button className="save-btn" onClick={handleSaveUser}>
+                        {selectedUser ? "Update User" : "Add User"}
+                    </button>
+                    {selectedUser && (
+                        <button
+                            className="cancel-btn"
+                            onClick={() => {
+                                setSelectedUser(null);
+                                setUserName("");
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    )}
+                </div>
             </div>
 
-            { }
-            <div>
+            <div className="user-list">
                 <h3>Existing Users</h3>
-                <table
-                    style={{
-                        width: "100%",
-                        borderCollapse: "collapse",
-                        marginBottom: "20px",
-                    }}
-                >
+                <table>
                     <thead>
                         <tr>
-                            <th style={{ border: "1px solid #ddd", padding: "8px" }}>User Name</th>
-                            <th style={{ border: "1px solid #ddd", padding: "8px" }}>Actions</th>
+                            <th>User Name</th>
+                            <th>Permissions</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {users.map((user) => (
                             <tr key={user.id}>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    {user.userName}
+                                <td>{user.userName}</td>
+                                <td>
+                                    {["view", "control", "delete"]
+                                        .filter((perm) => user.permissions?.[perm])
+                                        .join(", ") || "None"}
                                 </td>
-                                <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                                    <button
-                                        onClick={() => handleEditUser(user)}
-                                        style={{
-                                            padding: "5px 10px",
-                                            background: "#ffc107",
-                                            color: "white",
-                                            border: "none",
-                                            borderRadius: "5px",
-                                            cursor: "pointer",
-                                            marginRight: "5px",
-                                        }}
-                                    >
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteUser(user.id)}
-                                        style={{
-                                            padding: "5px 10px",
-                                            background: "#f44336",
-                                            color: "white",
-                                            border: "none",
-                                            borderRadius: "5px",
-                                            cursor: "pointer",
-                                        }}
-                                    >
-                                        Delete
-                                    </button>
+                                <td>
+                                    <button className="edit-btn" onClick={() => handleEditUser(user)}>Edit</button>
+                                    <button className="delete-btn" onClick={() => handleDeleteUser(user.id)}>Delete</button>
                                 </td>
                             </tr>
                         ))}

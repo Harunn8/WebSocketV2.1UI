@@ -1,17 +1,98 @@
-.message-box {
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
+/* Genel container */
+.device-list-page {
+    padding: 20px;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f5f5f5;
+    min-height: 100vh;
+}
+
+.device-list-container {
+    max-width: auto;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.device-list-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+/* Ana tablo */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+tr:hover {
+    background-color: #f9f9f9;
+}
+
+/* Aktif cihaz satırı */
+tr[style*="#2e7d32"] {
     font-weight: bold;
-  }
-  
-  .message-box.success {
-    background-color: green;
-    color: white;
-  }
-  
-  .message-box.error {
-    background-color: red;
-    color: white;
-  }
-  
+}
+
+/* Cihaz detay kutusu */
+.tcp-detail-box {
+    margin: 10px 0;
+    padding: 15px;
+    background: #333;
+    border-radius: 8px;
+    color: #fff;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.tcp-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.tcp-actions button {
+    font-size: 20px;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.tcp-actions button:hover {
+    transform: scale(1.1);
+}
+
+.tcp-inner-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #444;
+    color: #fff;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.tcp-inner-table th, .tcp-inner-table td {
+    padding: 10px;
+    border-bottom: 1px solid #555;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}

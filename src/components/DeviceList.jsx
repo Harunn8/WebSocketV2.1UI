@@ -152,6 +152,21 @@ const DeviceListWithCommunication = () => {
         }
     };
 
+<<<<<<< HEAD
+=======
+    const toggleDetails = (deviceId) => {
+        setOpenDeviceIds((prev) => {
+            const updated = new Set(prev);
+            if (updated.has(deviceId)) {
+                updated.delete(deviceId);
+            } else {
+                updated.add(deviceId);
+            }
+            return updated;
+        });
+    };
+
+>>>>>>> 27d8b15b5f69e7baac01f081c18527515885fb59
     return (
         <>
             <ToastContainer />

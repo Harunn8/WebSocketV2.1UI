@@ -1,0 +1,104 @@
+.user-management {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+}
+
+.message {
+    text-align: center;
+    color: #007acc;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.form-section {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+}
+
+.form-section label {
+    display: block;
+    margin: 8px 0 4px;
+}
+
+.form-section input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.permissions {
+    margin-bottom: 10px;
+}
+
+.permission-checkbox {
+    margin-right: 15px;
+}
+
+.button-row {
+    display: flex;
+    gap: 10px;
+}
+
+.save-btn,
+.cancel-btn {
+    padding: 10px 20px;
+    border: none;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.save-btn {
+    background-color: #4caf50;
+}
+
+.cancel-btn {
+    background-color: #f44336;
+}
+
+.user-list table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.03);
+}
+
+.user-list th,
+.user-list td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+.edit-btn {
+    background-color: #ff9800;
+    color: white;
+    padding: 6px 12px;
+    margin-right: 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-btn {
+    background-color: #e53935;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
